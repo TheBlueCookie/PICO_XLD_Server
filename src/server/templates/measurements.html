@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="measurements">
+    <h3>DO NOT RELOAD THIS PAGE! Use the Navbar instead.</h3>
+    <h2>Measurements Page</h2>
+    <div class="measurement-data">
+        {% for meas in measurements %}
+        <h3>{{ meas.user }} ({{ meas.group }})</h3>
+        <p>Time Started: {{ meas.timestamp }}</p>
+        <p>Running: {{ meas.running }}</p>
+        <p>Progress: {{ meas.progress }}</p>
+        <p>Signal Status: {{ meas.signal }}</p>
+        <p>API ID: {{ meas.id }}</p>
+        {% endfor %}
+    </div>
+    <form method="POST">
+        <button name='go button' class="button" type="submit" value="set go">Set Signal Flag to Go</button>
+    </form>
+</div>
+{% endblock %}

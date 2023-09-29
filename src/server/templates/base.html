@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>XLD Measurement Server</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+<div class="header">
+    <h1>XLD Measurement Server</h1>
+</div>
+<div class="container">
+    <div class="navbar">
+        <a href="/">Home</a>
+        <a href="/control">Control Panel</a>
+        <a href="/meas/status">Measurement Admin</a>
+        <a href="/logout">Logout</a>
+    </div>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul class=flashes>
+        {% for message in messages %}
+        {{ message }}<br>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+</div>
+</body>
+</html>

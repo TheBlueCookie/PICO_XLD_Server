@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="home">
+    <h2>Current Cryostat Status</h2>
+
+    <div class="sensor-data">
+        <h3>Temperature Sensors</h3>
+            <p>Mixing Chamber: {{ temps.mxc }} K</p>
+            <p>Still: {{ temps.still }} K</p>
+            <p>4K Stage: {{ temps.four_k }} K</p>
+            <p>50K Stage: {{ temps.fifty_k }} K</p>
+        <h3>Heaters</h3>
+            <p>Mixing Chamber: {{ powers.mxc }} mW</p>
+            <p>Still: {{ powers.still }} mW</p>
+            <p>Heatswitch Mixing Chamber: {{ powers.mxc_switch }} mW</p>
+            <p>Heatswitch Still: {{ powers.still_switch }} mW</p>
+    </div>
+</div>
+{% endblock %}

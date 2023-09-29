@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="control">
+    <h2>Control Page</h2>
+    <div class="sensor-data">
+        <h3>Temperature Sensors</h3>
+            <p>Mixing Chamber: {{ temps.mxc }} K</p>
+            <p>Still: {{ temps.still }} K</p>
+            <p>4K Stage: {{ temps.four_k }} K</p>
+            <p>50K Stage: {{ temps.fifty_k }} K</p>
+        <h3>Heaters</h3>
+            <p>Mixing Chamber: {{ powers.mxc }} mW</p>
+            <p>Still: {{ powers.still }} mW</p>
+            <p>Heatswitch Mixing Chamber: {{ powers.mxc_switch }} mW</p>
+            <p>Heatswitch Still: {{ powers.still_switch }} mW</p>
+    </div>
+    <form method="POST">
+        <label for="power">Change Heating Power (mW):</label>
+        <input type="number" id="power" name="power" step=0.1 required>
+        <label for="heater select">Heater:</label>
+        <select id="heater select" name="heater select">
+            <option value="still">Still</option>
+        </select>
+        <button class="button" type="submit">Set Power</button>
+    </form>
+</div>
+{% endblock %}
