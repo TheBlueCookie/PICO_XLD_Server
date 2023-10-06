@@ -71,4 +71,4 @@ class XLDMeasClient:
 
     def close_session(self):
         if self._deregister():
-            print("Deregistered succesfully.")
+            print("Deregistered successfully.")

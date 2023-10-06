@@ -29,11 +29,7 @@ class XLDTempHandler:
             db_pow = self.db.read_heater(index=i)
 
             if not isclose(actual_pow, db_pow):
-                # self.controller.set_heater_power(heater_index=i, setpower=db_pow)
-                print(f'Would have set heater {i} to {db_pow}')
-
-            else:
-                self.db.write_heater(index=i, val=actual_pow)
+                self.controller.set_heater_power(heater_index=i, setpower=db_pow)
 
     def exec(self):
         while True:
