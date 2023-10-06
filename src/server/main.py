@@ -11,7 +11,7 @@ from passkey import key, users, blueftc_ip
 db = ServerDB()
 db.prep_tables()
 
-tccontrol = XLDTempHandler(database=db, ip=blueftc_ip, update_interval=60)
+tccontrol = XLDTempHandler(database=db, ip=blueftc_ip, update_interval=5)
 
 app = Flask(__name__)
 app.secret_key = key
