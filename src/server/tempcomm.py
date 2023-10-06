@@ -20,7 +20,7 @@ class XLDTempHandler:
     def _update_heaters(self):
         for i in self.heater_indices:
             actual_pow = self.controller.get_heater_power(i)
-            self.db.write_heater(index=i, val=actual_pow[0], timestamp=actual_pow[1])
+            self.db.write_heater(index=i, val=actual_pow)
 
     def exec(self):
         while True:
