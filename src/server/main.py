@@ -10,6 +10,9 @@ from passkey import key, users, blueftc_ip
 
 db = ServerDB()
 db.prep_tables()
+
+tccontrol = XLDTempHandler(database=db, ip=blueftc_ip, update_interval=60)
+
 app = Flask(__name__)
 app.secret_key = key
 
@@ -100,7 +103,7 @@ def control():
         new_power = request.form.get("power")
         heater_id = request.form.get("heater select")
         if heater_id == 'still':
-            db.write_heater(channel=db.still_ind, val=float(new_power))
+            db.write_heater(index=db.still_ind, val=float(new_power))
 
     return render_template("control.html", powers=get_all_powers(), temps=get_all_temps())
 
@@ -147,8 +150,6 @@ def get_all_powers():
 
     return powers
 
-
-tccontrol = XLDTempHandler(database=db, ip=blueftc_ip, update_interval=60)
 
 flask_server = Process(target=exec_flask, name='Flask Process')
 tc_process = Process(target=tccontrol.exec, name='Temp Controller')
