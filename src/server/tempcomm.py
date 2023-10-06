@@ -15,7 +15,7 @@ class XLDTempHandler:
     def _update_temps(self):
         for ch in self.temp_channels:
             temp = self.controller.get_latest_channel_temp(ch)
-            self.db.write_temp(channel=ch, val=temp[0], timestamp=val[1])
+            self.db.write_temp(channel=ch, val=temp[0], timestamp=temp[1])
 
     def _update_heaters(self):
         for i in self.heater_indices:
