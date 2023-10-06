@@ -46,7 +46,7 @@ class ServerDB:
         tstamp DATETIME)''')
 
     def _get_all_ids(self):
-        cursor = self.con.execute("SELECT id FROM clients")
+        cursor = self._exec_db_command("SELECT id FROM clients")
         ids = [row[0] for row in cursor]
 
         return ids

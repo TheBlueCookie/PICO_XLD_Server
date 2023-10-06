@@ -53,7 +53,6 @@ class XLDMeasClient:
             if response['signal'] == 'go':
                 return True
 
-
     def _running_update(self, running):
         payload = {'id': self.id, 'running': running}
         response = self._generic_request(path=self._make_endpoint('meas', 'status', 'set'), payload=payload)
