@@ -144,6 +144,11 @@ class ServerDB:
                 cursor = self._exec_db_command("SELECT signal from clients WHERE id = ?", (meas_id,))
                 return [row[0] for row in cursor][0]
 
+    def get_all_meas_signals(self):
+        with self.meas_lock:
+            cursor = self._exec_db_command("SELECT signal from clients WHERE 1")
+            return [row[0] for row in cursor]
+
     def set_all_meas_to_go(self):
         with self.meas_lock:
             self._exec_db_command("UPDATE clients SET signal = ? WHERE 1", (GO,))
