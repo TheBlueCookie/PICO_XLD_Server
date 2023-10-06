@@ -101,6 +101,8 @@ class ServerDB:
                                   "DO UPDATE SET temp = ?, tstamp = ?",
                                   (channel, val, timestamp, val, timestamp))
 
+            print(f'Written temp = {val} to channel {channel}.')
+
     def read_temp(self, channel: int):
         with self.temp_lock:
             cursor = self._exec_db_command(
@@ -119,6 +121,8 @@ class ServerDB:
                                   "ON CONFLICT(h_ind)"
                                   "DO UPDATE SET power = ?, tstamp = ?",
                                   (index, val, timestamp, val, timestamp))
+
+            print(f'Written power = {val} to heater {index}.')
 
     def read_heater(self, index: int):
         with self.heater_lock:
