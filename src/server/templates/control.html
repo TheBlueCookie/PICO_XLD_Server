@@ -16,11 +16,11 @@
             <p>Heatswitch Still: {{ powers.still_switch }} uW</p>
     </div>
     <form method="POST">
-        <label for="power">Change Heating Power (mW):</label>
+        <label for="power">Change Heating Power (uW):</label>
         <input type="number" id="power" name="power" step=0.1 required>
         <label for="heater select">Heater:</label>
         <select id="heater select" name="heater select">
-            <option value="still">Still</option>
+            <option value="mixing chamber">Mixing Chamber</option>
         </select>
         <button class="button" type="submit">Set Power</button>
     </form>

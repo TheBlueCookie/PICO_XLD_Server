@@ -102,8 +102,8 @@ def control():
     if request.method == "POST":
         new_power = request.form.get("power")
         heater_id = request.form.get("heater select")
-        if heater_id == 'still':
-            db.write_heater(index=db.still_ind, val=float(new_power))
+        if heater_id == 'mixing chamber':
+            db.write_heater(index=db.mxc_ind, val=float(new_power))
 
     return render_template("control.html", powers=get_all_powers(), temps=get_all_temps())
 
