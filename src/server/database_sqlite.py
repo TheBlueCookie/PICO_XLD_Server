@@ -116,7 +116,7 @@ class ServerDB:
         with self.heater_lock:
             self._exec_db_command("INSERT INTO heaters (h_ind, power, tstamp)"
                                   "VALUES (?, ?, ?)"
-                                  "ON CONFLICT(channel)"
+                                  "ON CONFLICT(h_ind)"
                                   "DO UPDATE SET power = ?, tstamp = ?",
                                   (index, val, timestamp, val, timestamp))
 
