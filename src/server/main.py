@@ -5,10 +5,11 @@ from flask_login import LoginManager, UserMixin
 import json
 
 from tempcomm import XLDTempHandler
-from database import ServerDB
+from database_sqlite import ServerDB
 from passkey import key, users, blueftc_ip
 
 db = ServerDB()
+db.prep_tables()
 app = Flask(__name__)
 app.secret_key = key
 
@@ -21,6 +22,9 @@ class User(UserMixin):
     def __init__(self, id):
         self.id = id
 
+
+def exec_flask():
+    app.run()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -38,7 +42,7 @@ def meas_reg():
 @app.route("/meas/deregister", methods=['POST'])
 def meas_dereg():
     cont = json_request_handler()
-    db.unregister_measurement(meas_id=cont['id'])
+    db.deregister_measurement(meas_id=cont['id'])
 
     return json.dumps({'deregistered': True})
 
@@ -77,7 +81,6 @@ def meas_status_get():
 def meas_status_set_post():
     payload = json_request_handler()
     db.set_meas_status(meas_id=payload['id'], status=payload['running'])
-    print("")
 
     return json.dumps({'running': True})
 
@@ -145,7 +148,9 @@ def get_all_powers():
     return powers
 
 
-server = Process(target=app.run())
-server.start()
+server = Process(target=exec_flask)
+
+if __name__ == "__main__":
+    server.start()
 
 # tempserv = XLDTempHandler(database=db, ip=blueftc_ip, update_interval=60)
