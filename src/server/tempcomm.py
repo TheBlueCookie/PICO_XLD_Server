@@ -22,7 +22,7 @@ class XLDTempHandler:
             actual_pow = self.controller.get_heater_power(i)
             self.db.write_heater(channel=i, val=actual_pow)
 
-    def run(self):
+    def exec(self):
         while True:
             self._update_temps()
             self._update_heaters()

@@ -148,9 +148,11 @@ def get_all_powers():
     return powers
 
 
-server = Process(target=exec_flask)
+tccontrol = XLDTempHandler(database=db, ip=blueftc_ip, update_interval=60)
+
+flask_server = Process(target=exec_flask, name='Flask Process')
+tc_process = Process(target=tccontrol.exec, name='Temp Controller')
 
 if __name__ == "__main__":
-    server.start()
-
-# tempserv = XLDTempHandler(database=db, ip=blueftc_ip, update_interval=60)
+    flask_server.start()
+    tc_process.start()
