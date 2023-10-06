@@ -42,7 +42,7 @@ class TemperatureSweep:
             sleep(self.thermalization_time)
             print(
                 f'{datetime.now()}: Thermalization done. Current temperature '
-                f'{self.db.read_temp(channel=self.db.mxc_ind)}')
+                f'{self.db.read_temp(channel=self.db.mxc_ch)}')
             self.start_all_client_meas()
             print(f'{datetime.now()}: Send GO signal to all measurement clients.')
             sleep(30)
