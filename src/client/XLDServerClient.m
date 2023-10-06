@@ -1,4 +1,4 @@
-classdef XLDMeasClient
+classdef XLDMeasClient < handle
     properties
         user
         group
@@ -48,7 +48,7 @@ classdef XLDMeasClient
             endpoint = [obj.http_ip_port '/' strjoin(varargin, '/')];
         end
 
-        function register(obj)
+        function obj = register(obj)
             payload = struct('user', obj.user, 'group', obj.group);
             response = obj.genericRequest(obj.makeEndpoint('meas', 'register'), payload);
             obj.id = response.id;
@@ -60,19 +60,20 @@ classdef XLDMeasClient
             deregistered = response.deregistered;
         end
 
-        function listen(obj)
+        function flag = listen(obj)
             while true
                 pause(obj.update_interval);
                 payload = struct('id', obj.id);
                 response = obj.genericRequest(obj.makeEndpoint('meas', 'signal'), payload);
                 disp(['Pinged server. Response: ' response.signal]);
                 if strcmp(response.signal, 'go')
+                    flag = true;
                     return;
                 end
             end
         end
 
-        function runningUpdate(obj, running)
+        function obj = runningUpdate(obj, running)
             payload = struct('id', obj.id, 'running', running);
             response = obj.genericRequest(obj.makeEndpoint('meas', 'status', 'set'), payload);
             obj.running = logical(response.running);
@@ -96,5 +97,9 @@ classdef XLDMeasClient
                 disp('Deregistered successfully.');
             end
         end
+
+        function temp = getBaseTemp(obj)
+            response = obj.genericRequest(obj.makeEndpoint('temps', 'base'));
+            temp = response.base_temp;
     end
 end

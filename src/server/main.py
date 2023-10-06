@@ -107,8 +107,8 @@ def control():
 
 
 @app.route('/temps/base', methods=['GET'])
-def get_temps():
-    return json.dumps({'base temp': db.read_temp(channel=db.mxc_ch)})
+def get_base_temp():
+    return json.dumps({'base_temp': db.read_temp(channel=db.mxc_ch)})
 
 
 @app.route('/meas/signal', methods=['POST'])

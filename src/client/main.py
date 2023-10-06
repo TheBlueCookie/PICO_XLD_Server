@@ -71,3 +71,8 @@ class XLDMeasClient:
     def close_session(self):
         if self._deregister():
             print("Deregistered successfully.")
+
+    def get_base_temp(self):
+        response = self._generic_request(path= self._make_endpoint('temps', 'base'))
+
+        return response['base_temp']
