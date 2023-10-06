@@ -34,13 +34,14 @@ class TemperatureSweep:
         print(f'{datetime.now()}: Making sure that all clients are ready.')
         self.wait_for_all_clients()
         print(f'{datetime.now()}: Started sweep.')
+
         for i, power in enumerate(self.power_array):
-            self.db.write_heater(index=self.db.mxc_ind, val=power)
+            self.db.write_heater(index=self.db.mxc_ind, val=float(power))
             print(f'{datetime.now()}: Set heater power to {power} uW. '
                   f'Waiting {self.thermalization_time} s for thermalization.')
             sleep(self.thermalization_time)
             print(
-                f'{datetime.now()}: Thermalization done. Current temperature ')
+                f'{datetime.now()}: Thermalization done. Current temperature '
                 f'{self.db.read_temp(channel=self.db.mxc_ind)}')
             self.start_all_client_meas()
             print(f'{datetime.now()}: Send GO signal to all measurement clients.')

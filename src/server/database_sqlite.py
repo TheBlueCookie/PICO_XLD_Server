@@ -79,8 +79,6 @@ class ServerDB:
                              'running': row[5],
                              'signal': row[6]})
 
-            print(meas)
-
             return meas
 
     def set_meas_status(self, meas_id: str, status: bool):
