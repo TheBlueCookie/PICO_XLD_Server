@@ -11,8 +11,6 @@ from passkey import key, users, blueftc_ip
 db = ServerDB()
 db.prep_tables()
 
-tccontrol = XLDTempHandler(database=db, ip=blueftc_ip, update_interval=5)
-
 app = Flask(__name__)
 app.secret_key = key
 
@@ -151,8 +149,13 @@ def get_all_powers():
     return powers
 
 
+def exec_tcontrol():
+    tccontrol = XLDTempHandler(database=db, ip=blueftc_ip, update_interval=5)
+    tccontrol.exec()
+
+
 flask_server = Process(target=exec_flask, name='Flask Process')
-tc_process = Process(target=tccontrol.exec, name='Temp Controller')
+tc_process = Process(target=exec_tcontrol, name='Temp Controller')
 
 if __name__ == "__main__":
     flask_server.start()
