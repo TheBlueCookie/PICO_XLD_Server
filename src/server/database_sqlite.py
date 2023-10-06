@@ -93,13 +93,13 @@ class ServerDB:
 
                 return status
 
-    def write_temp(self, channel: int, val: float):
+    def write_temp(self, channel: int, val: float, timestamp: datetime = datetime.now()):
         with self.temp_lock:
             self._exec_db_command("INSERT INTO temps (channel, temp, tstamp)"
                                   "VALUES (?, ?, ?)"
                                   "ON CONFLICT(channel)"
                                   "DO UPDATE SET temp = ?, tstamp = ?",
-                                  (channel, val, datetime.now(), val, datetime.now()))
+                                  (channel, val, timestamp, val, timestamp))
 
     def read_temp(self, channel: int):
         with self.temp_lock:
@@ -112,13 +112,13 @@ class ServerDB:
             else:
                 return 0
 
-    def write_heater(self, index: int, val: float):
+    def write_heater(self, index: int, val: float, timestamp: datetime = datetime.now()):
         with self.heater_lock:
             self._exec_db_command("INSERT INTO heaters (h_ind, power, tstamp)"
                                   "VALUES (?, ?, ?)"
                                   "ON CONFLICT(channel)"
                                   "DO UPDATE SET power = ?, tstamp = ?",
-                                  (index, val, datetime.now(), val, datetime.now()))
+                                  (index, val, timestamp, val, timestamp))
 
     def read_heater(self, index: int):
         with self.heater_lock:

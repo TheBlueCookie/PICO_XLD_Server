@@ -1,5 +1,5 @@
 from blueftc.BlueFTController import BlueFTController
-from database import ServerDB
+from database_sqlite import ServerDB
 
 from time import sleep
 
@@ -15,12 +15,12 @@ class XLDTempHandler:
     def _update_temps(self):
         for ch in self.temp_channels:
             temp = self.controller.get_latest_channel_temp(ch)
-            self.db.write_temp(channel=ch, val=temp)
+            self.db.write_temp(channel=ch, val=temp[0], timestamp=val[1])
 
     def _update_heaters(self):
         for i in self.heater_indices:
             actual_pow = self.controller.get_heater_power(i)
-            self.db.write_heater(channel=i, val=actual_pow)
+            self.db.write_heater(index=i, val=actual_pow[0], timestamp=actual_pow[1])
 
     def exec(self):
         while True:
