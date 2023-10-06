@@ -34,8 +34,8 @@ class ServerDB:
         w_group VARCHAR,
         start_time DATETIME,
         progress NUMERIC,
-        running BOOLEAN,
-        signal BIT)''')
+        running BIT,
+        signal VARCHAR)''')
         self._exec_db_command('''CREATE TABLE if not exists temps
         (channel NUMERIC PRIMARY KEY,
         temp NUMERIC,
