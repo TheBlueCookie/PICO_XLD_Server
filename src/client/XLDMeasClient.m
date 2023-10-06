@@ -13,10 +13,10 @@ classdef XLDMeasClient < handle
 
     methods
         function obj = XLDMeasClient(server_ip, user, group, server_port, update_interval)
-            if nargin < 5
+            if nargin < 4
                 server_port = 5000;
             end
-            if nargin < 6
+            if nargin < 5
                 update_interval = 30;
             end
             obj.user = user;
@@ -101,5 +101,6 @@ classdef XLDMeasClient < handle
         function temp = getBaseTemp(obj)
             response = obj.genericRequest(obj.makeEndpoint('temps', 'base'));
             temp = response.base_temp;
+        end
     end
 end
