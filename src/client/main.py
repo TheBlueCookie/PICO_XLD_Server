@@ -73,6 +73,6 @@ class XLDMeasClient:
             print("Deregistered successfully.")
 
     def get_mxc_temp(self):
-        response = self._generic_request(path= self._make_endpoint('temps', 'base'))
+        response = self._generic_request(path= self._make_endpoint('temps', 'mxc'))
 
         return response['mxc_temp']

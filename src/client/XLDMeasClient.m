@@ -99,7 +99,7 @@ classdef XLDMeasClient < handle
         end
 
         function temp = getMXCTemp(obj)
-            response = obj.genericRequest(obj.makeEndpoint('temps', 'base'));
+            response = obj.genericRequest(obj.makeEndpoint('temps', 'mxc'));
             temp = response.mxc_temp;
         end
     end
