@@ -106,9 +106,9 @@ def control():
     return render_template("control.html", powers=get_all_powers(), temps=get_all_temps())
 
 
-@app.route('/temps/base', methods=['GET'])
+@app.route('/temps/mxc', methods=['GET'])
 def get_base_temp():
-    return json.dumps({'base_temp': db.read_temp(channel=db.mxc_ch)})
+    return json.dumps({'mxc_temp': db.read_temp(channel=db.mxc_ch)})
 
 
 @app.route('/meas/signal', methods=['POST'])

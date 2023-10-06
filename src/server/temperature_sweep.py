@@ -41,8 +41,8 @@ class TemperatureSweep:
                   f'Waiting {self.thermalization_time} s for thermalization.')
             sleep(self.thermalization_time)
             print(
-                f'{datetime.now()}: Thermalization done. Current temperature '
-                f'{self.db.read_temp(channel=self.db.mxc_ch)}')
+                f'{datetime.now()}: Thermalization done. Current temperature at mixing chamber: '
+                f'{self.db.read_temp(channel=self.db.mxc_ch)} K')
             self.start_all_client_meas()
             print(f'{datetime.now()}: Send GO signal to all measurement clients.')
             sleep(30)
