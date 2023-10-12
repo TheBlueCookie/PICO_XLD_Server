@@ -2,11 +2,13 @@
 
 {% block content %}
 <div class="measurements">
-    <h3>DO NOT RELOAD THIS PAGE! Use the Navbar instead.</h3>
     <h2>Measurements Page</h2>
     <div class="measurement-data">
         {% for meas in measurements %}
         <h3>{{ meas.user }} ({{ meas.group }})</h3>
+        <form method="POST" id="delete client">
+            <button name='del meas' class="button-del" type='button' value="{{ meas.id }}" onclick="confirmDel(this.value)">Delete Client</button>
+        </form>
         <p>Time Started: {{ meas.timestamp }}</p>
         <p>Running: {{ meas.running }}</p>
         <p>Progress: {{ meas.progress }}</p>
@@ -15,7 +17,33 @@
         {% endfor %}
     </div>
     <form method="POST">
-        <button name='go button' class="button" type="submit" value="set go">Set Signal Flag to Go</button>
+        <button name='go button' class="button" value="set go" type="button" onclick="confirmGo()">Start all measurements</button>
     </form>
 </div>
+<script>
+function confirmDel(id) {
+    var confirmation = confirm("Are you sure you want to delete this measurement client?");
+    if (confirmation) {
+    var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/meas/status", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        var data = JSON.stringify({ meas_id: id , delete: true});
+        xhr.send(data);
+    }
+}
+
+function confirmGo() {
+    var confirmation = confirm("Are you sure you want to start all measurements?");
+    if (confirmation) {
+    var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/meas/status", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        var data = JSON.stringify({ start: true});
+        xhr.send(data);
+    }
+}
+
+</script>
 {% endblock %}

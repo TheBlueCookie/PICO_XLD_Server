@@ -3,6 +3,7 @@ from flask import Flask, request, render_template, redirect, url_for, flash
 import flask_login
 from flask_login import LoginManager, UserMixin
 import json
+from time import sleep
 
 from tempcomm import XLDTempHandler
 from database_sqlite import ServerDB
@@ -71,12 +72,17 @@ def meas_status_get():
         return render_template('measurements.html', measurements=db.get_html_meas_dict())
 
     else:
-        if request.form['go button'] == 'set go':
+        payload = json_request_handler()
+        if 'start' in payload.keys() and payload['start']:
             db.set_all_meas_to_go()
+            flash("All signal flags set to GO")
+            return redirect('/meas/status')
 
-        flash("All signal flags set to GO")
-        return render_template('measurements.html', measurements=db.get_html_meas_dict())
-
+        elif 'delete' in payload.keys() and payload['delete']:
+            meas_info = db.get_single_meas_dict(meas_id=payload['meas_id'])
+            db.deregister_measurement(meas_id=meas_info['id'])
+            flash(f"Deleted measurement client") # run by {meas_info['user']} ({meas_info['group']})")
+            return redirect('/meas/status')
 
 @app.route('/meas/status/set', methods=['POST'])
 def meas_status_set_post():
@@ -102,8 +108,10 @@ def control():
         heater_id = request.form.get("heater select")
         if heater_id == 'mixing chamber':
             db.write_heater(index=db.mxc_ind, val=float(new_power))
+            return redirect('/control')
 
-    return render_template("control.html", powers=get_all_powers(), temps=get_all_temps())
+    else:
+        return render_template("control.html", powers=get_all_powers(), temps=get_all_temps())
 
 
 @app.route('/temps/mxc', methods=['GET'])
@@ -159,4 +167,4 @@ tc_process = Process(target=exec_tcontrol, name='Temp Controller')
 
 if __name__ == "__main__":
     flask_server.start()
-    tc_process.start()
+    # tc_process.start()

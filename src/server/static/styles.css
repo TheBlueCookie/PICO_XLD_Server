@@ -80,3 +80,11 @@ body {
     border: none;
     cursor: pointer;
 }
+
+.button-del {
+    background-color: #d15c38;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+}

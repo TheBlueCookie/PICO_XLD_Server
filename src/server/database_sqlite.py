@@ -76,10 +76,16 @@ class ServerDB:
             cursor = self._exec_db_command("SELECT * FROM clients")
             for row in cursor:
                 meas.append({'id': row[0], 'user': row[1], 'group': row[2], 'timestamp': row[3], 'progress': row[4],
-                             'running': row[5],
-                             'signal': row[6]})
+                             'running': row[5], 'signal': row[6]})
 
             return meas
+
+    def get_single_meas_dict(self, meas_id):
+        with self.meas_lock:
+            cursor = self._exec_db_command("SELECT * FROM clients where id = ?", (meas_id, ))
+            for row in cursor:
+                return {'id': row[0], 'user': row[1], 'group': row[2], 'timestamp': row[3], 'progress': row[4],
+                        'running': row[5], 'signal': row[6]}
 
     def set_meas_status(self, meas_id: str, status: bool):
         with self.meas_lock:
