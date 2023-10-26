@@ -50,8 +50,12 @@ class XLDMeasClient:
             payload = {'id': self.id}
             response = self._generic_request(path=self._make_endpoint('meas', 'signal'), payload=payload)
             print(f'Pinged server. Response: {response}')
-            if response['signal'] == 'go':
-                return True
+            try:
+                if response['signal'] == 'go':
+                    return True
+            except TypeError as ex:
+                print("Error on server side. Wrong response received.")
+
 
     def _running_update(self, running):
         payload = {'id': self.id, 'running': running}

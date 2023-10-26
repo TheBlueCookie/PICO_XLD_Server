@@ -10,7 +10,7 @@ if client.listen():
     print("Starting measurement")
 
 client.started()
-sleep(10)
+sleep(60)
 print("done")
 client.stopped()
 sleep(10)
