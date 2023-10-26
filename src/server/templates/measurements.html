@@ -7,7 +7,7 @@
         {% for meas in measurements %}
         <h3>{{ meas.user }} ({{ meas.group }})</h3>
         <form method="POST" id="delete client">
-            <button name='del meas' class="button-del" type='button' value="{{ meas.id }}" onclick="confirmDel(this.value)">Delete Client</button>
+            <button name='del meas' class="button danger-button" type='button' value="{{ meas.id }}" onclick="confirmDel(this.value)">Delete Client</button>
         </form>
         <p>Time Started: {{ meas.timestamp }}</p>
         <p>Running: {{ meas.running }}</p>
@@ -18,7 +18,7 @@
         {% endfor %}
     </div>
     <form method="POST">
-        <button name='go button' class="button" value="set go" type="button" onclick="confirmGo()">Start all measurements</button>
+        <button name='go button' class="button danger-button" value="set go" type="button" onclick="confirmGo()">Start all measurements</button>
     </form>
 </div>
 <script>
@@ -43,6 +43,7 @@ function confirmGo() {
 
         var data = JSON.stringify({ start: true});
         xhr.send(data);
+        location.reload();
     }
 }
 

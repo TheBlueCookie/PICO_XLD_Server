@@ -88,3 +88,47 @@ body {
     border: none;
     cursor: pointer;
 }
+
+.tsweep-element {
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.column {
+    float: left;
+    width: 50%;
+}
+
+label, input, .sum-item {
+    margin-bottom: 5px;
+    margin-top: 5px;
+    display: inline-block;
+}
+
+.row {
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+textarea {
+    width: 200px;
+    height: 200px
+}
+
+.input-error {
+    outline: 1px solid red;
+}
+
+button {
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+button:hover {
+    background-color: cornflowerblue;
+}
+
+.danger-button:hover {
+    background-color: #d15c38;
+}
+

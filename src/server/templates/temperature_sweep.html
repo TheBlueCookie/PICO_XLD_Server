@@ -1,103 +1,374 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="temperature-sweep">
-    <h2>Temperature Sweep Page</h2>
-    <label for="sweep-mode">Sweep Mode:</label>
-    <select id="sweep-mode" name="sweep-mode">
-        <option value="direct-power">Direct Power</option>
-        <option value="pid">PID</option>
-    </select>
-
-    <div id="direct-power-settings" style="display: none;">
+<div class="temperature-sweep" id="sweep-setup">
+    <h2>Temperature Sweep Setup</h2>
+    <div class="row">
+        <div class="column">
+            <label for="sweep-mode">Sweep Mode:</label>
+        </div>
+        <div class="column">
+            <select id="sweep-mode" name="sweep-mode">
+                <option value="direct-power" selected="selected">Direct Power</option>
+                <option value="pid">PID</option>
+            </select>
+        </div>
+    </div>
+    <div id="direct-power-settings">
         <h3>Direct Power Settings</h3>
-        <label for="interpolation">Interpolation:</label>
-        <select id="interpolation" name="interpolation">
-            <option value="linear">Linear</option>
-            <option value="quadratic">Quadratic</option>
-            <option value="manual">Manual</option>
-        </select>
-        <div id="linear-quadratic-settings" style="display: none;">
-            <label for="min-power">Minimum Power:</label>
-            <input type="text" id="min-power" name="min-power">
-            <label for="max-power">Maximum Power:</label>
-            <input type="text" id="max-power" name="max-power">
-            <label for="power-steps">Power Steps:</label>
-            <input type="text" id="power-steps" name="power-steps">
+        <div class="row">
+            <div class="column">
+                <label for="interpolation">Interpolation:</label>
+            </div>
+            <div class="column">
+                <select id="interpolation" name="interpolation">
+                    <option value="linear">Linear</option>
+                    <option value="quadratic">Quadratic</option>
+                    <option value="manual">Manual</option>
+                </select>
+            </div>
+        </div>
+        <div id="linear-quadratic-settings">
+            <div class="row">
+                <div class="column">
+                    <label for="min-power">Minimum Power (&mu;W):</label><br>
+                    <label for="max-power">Maximum Power (&mu;W):</label><br>
+                    <label for="power-steps">Number of Power Steps:</label><br>
+                </div>
+                <div class="column">
+                    <input type="text" id="min-power" name="min-power" value="0" class="float-only"><br>
+                    <input type="text" id="max-power" name="max-power" value="1" class="float-only"><br>
+                    <input type="text" id="power-steps" name="power-steps" value="10" class="int-only">
+                </div>
+            </div>
         </div>
         <div id="manual-settings" style="display: none;">
-            <label for="manual-input">Manual Input:</label>
-            <textarea id="manual-input" name="manual-input"></textarea>
+            <div class="row">
+                <div class="column">
+                    <label for="manual-input">Manual Power Values (&mu;W):</label>
+                </div>
+                <div class="column">
+                    <textarea id="manual-input" name="manual-input"
+                              placeholder="Enter each power value in a new line." class="float-only-manual"></textarea>
+                </div>
+            </div>
         </div>
-        <label for="thermalization-time">Thermalization Time:</label>
-        <input type="text" id="thermalization-time" name="thermalization-time">
+        <div class="row">
+            <div class="column">
+                <label for="thermalization-time">Thermalization Time (minutes):</label>
+            </div>
+            <div class="column">
+                <input type="text" id="thermalization-time" name="thermalization-time" value="5"
+                       class="float-only">
+            </div>
+        </div>
+
+
     </div>
 
     <div id="pid-settings" style="display: none;">
         <h3>PID Settings</h3>
-        <label for="p-value">P:</label>
-        <input type="text" id="p-value" name="p-value">
-        <label for="i-value">I:</label>
-        <input type="text" id="i-value" name="i-value">
-        <label for="d-value">D:</label>
-        <input type="text" id="d-value" name="d-value">
-        <label for="temperature-points">Temperature Points:</label>
-        <select id="temperature-points" name="temperature-points">
-            <option value="linear">Linear</option>
-            <option value="manual">Manual</option>
-        </select>
-        <div id="linear-temperature-settings" style="display: none;">
-            <label for="min-temperature">Minimum Temperature:</label>
-            <input type="text" id="min-temperature" name="min-temperature">
-            <label for="max-temperature">Maximum Temperature:</label>
-            <input type="text" id="max-temperature" name="max-temperature">
-            <label for="temperature-steps">Temperature Steps:</label>
-            <input type="text" id="temperature-steps" name="temperature-steps">
+        <div class="row">
+            <div class="column">
+                <label for="p-value">Proportional:</label><br>
+                <label for="i-value">Integral:</label><br>
+                <label for="d-value">Derivative:</label>
+            </div>
+            <div class="column">
+                <input type="text" id="p-value" name="p-value" value="1" class="float-only"><br>
+                <input type="text" id="i-value" name="i-value" value="1" class="float-only"><br>
+                <input type="text" id="d-value" name="d-value" value="1" class="float-only">
+            </div>
         </div>
+
+        <div class="row">
+            <div class="column">
+                <label for="temperature-points">Temperature Points:</label>
+            </div>
+            <div class="column">
+                <select id="temperature-points" name="temperature-points">
+                    <option value="linear">Linear</option>
+                    <option value="manual">Manual</option>
+                </select>
+            </div>
+        </div>
+
+
+        <div id="linear-temperature-settings" style="display: none;">
+            <div class="row">
+                <div class="column">
+                    <label for="min-temperature">Min. Temperature (mK):<br><span
+                            style="font-size:0.8em;font-style: italic">0 for base temperature</span></label><br>
+                    <label for="max-temperature">Max. Temperature (mK):</label><br>
+                    <label for="temperature-steps">Number of Temperature Steps:</label>
+                </div>
+                <div class="column">
+                    <input type="text" id="min-temperature" name="min-temperature" value="0"
+                           class="float-only"><br><br>
+                    <input type="text" id="max-temperature" name="max-temperature" value="500" class="float-only"><br>
+                    <input type="text" id="temperature-steps" name="temperature-steps" value="10"
+                           class="int-only">
+                </div>
+            </div>
+        </div>
+
         <div id="manual-temperature-settings" style="display: none;">
-            <label for="manual-temperature-input">Manual Input:</label>
-            <textarea id="manual-temperature-input" name="manual-temperature-input"></textarea>
+            <div class="row">
+                <div class="column">
+                    <label for="manual-temperature-input">Manual Temperature Values (mK):</label>
+                </div>
+                <div class="column">
+                    <textarea id="manual-temperature-input" name="manual-temperature-input"
+                              placeholder="Enter each temperature value in a new line."
+                              class="float-only-manual"></textarea>
+                </div>
+            </div>
+
+
         </div>
     </div>
-
-    <label for="client-timeout">Client Timeout:</label>
-    <input type="text" id="client-timeout" name="client-timeout">
-    <input type="checkbox" id="return-to-base" name="return-to-base">
-    <label for="return-to-base">Return to base temperature once sweep is done.</label>
-    <button class="button" id="broadcast-parameters">Broadcast Parameters</button>
-    <button class="button" id="start-sweep">Start Temperature Sweep</button>
+    <div class="row">
+        <div class="column">
+            <label for="client-timeout">Client Timeout (minutes):</label>
+        </div>
+        <div class="column">
+            <input type="text" id="client-timeout" name="client-timeout" value="60" class="float-only">
+        </div>
+        <input type="checkbox" id="return-to-base" name="return-to-base">
+        <label for="return-to-base">Return to base temperature once sweep is done.</label>
+    </div>
+    <hr>
 </div>
 
+<button class="button" id="generate-tsweep" onclick="generateBtnClicked()">Generate Sweep Points</button>
+<button class="button" id="start-sweep" style="display: none">Start Temperature Sweep</button>
+
+<div id="direct-power-summary" style="display: none">
+    <h3>Generated Sweep</h3>
+    <div class="row">
+        <div class="column">
+            <span class="sum-item">Mode:</span><br>
+            <span class="sum-item">Power Values (&mu;W):</span><br>
+            <span class="sum-item">Thermalization Time (minutes):</span><br>
+            <span class="sum-item">Client Timeout (minutes):</span>
+        </div>
+        <div class="column">
+            <span id="summary-mode" class="sum-item"></span><br>
+            <span id="summary-values" class="sum-item"></span><br>
+            <span id="summary-therm-time" class="sum-item"></span><br>
+            <span id="summary-cl-timeout" class="sum-item"></span>
+        </div>
+    </div>
+    <span id="summary-ret-base" class="sum-item"><b></b></span>
+</div>
+
+<button class="button" id="confirm-tsweep" style="display: none" onclick="confirmSweepClicked()">Confirm Sweep
+    Parameters
+</button>
+<button class="button danger-button" id="broadcast-parameters" style="display: none">Broadcast Parameters</button>
+
 <script>
-document.getElementById("sweep-mode").addEventListener("change", function () {
-    var selectedValue = this.value;
 
-    // Hide all settings sections
-    document.getElementById("direct-power-settings").style.display = "none";
-    document.getElementById("linear-quadratic-settings").style.display = "none";
-    document.getElementById("manual-settings").style.display = "none";
-    document.getElementById("pid-settings").style.display = "none";
-    document.getElementById("linear-temperature-settings").style.display = "none";
-    document.getElementById("manual-temperature-settings").style.display = "none";
+    setInputFilter(document.getElementsByClassName("float-only"), function (value) {
+        return /^\d*\.?\d*$/.test(value); // Allow digits and '.' only, using a RegExp.
+    }, "Only digits and '.' are allowed");
 
-    // Show the selected settings section
-    if (selectedValue === "direct-power") {
-        document.getElementById("direct-power-settings").style.display = "block";
-        var interpolation = document.getElementById("interpolation").value;
-        if (interpolation === "linear" || interpolation === "quadratic") {
-            document.getElementById("linear-quadratic-settings").style.display = "block";
-        } else if (interpolation === "manual") {
-            document.getElementById("manual-settings").style.display = "block";
-        }
-    } else if (selectedValue === "pid") {
-        document.getElementById("pid-settings").style.display = "block";
-        var temperaturePoints = document.getElementById("temperature-points").value;
-        if (temperaturePoints === "linear") {
-            document.getElementById("linear-temperature-settings").style.display = "block";
-        } else if (temperaturePoints === "manual") {
-            document.getElementById("manual-temperature-settings").style.display = "block";
+    setInputFilter(document.getElementsByClassName("int-only"), function (value) {
+        return /^\d*$/.test(value); // Allow digits and '.' only, using a RegExp.
+    }, "Only digits are allowed");
+
+    // setInputFilter(document.getElementsByClassName("float-only-manual"), function (value) {
+    //     return /^\d*\.?\d*\,?$/.test(value); // Allow digits and '.' only, using a RegExp.
+    // }, "Only digits, '.' and line breaks are allowed");
+
+    function confirmSweepClicked() {
+        document.getElementById("sweep-setup").style.display = "none";
+        document.getElementById("generate-tsweep").style.display = "none";
+        document.getElementById("confirm-tsweep").style.display = "none";
+        document.getElementById("broadcast-parameters").style.display = "block";
+    }
+
+    function adjustContentToSweepMode() {
+        let selectedValue = document.getElementById("sweep-mode").value;
+
+        // Hide all settings sections
+        document.getElementById("direct-power-settings").style.display = "none";
+        document.getElementById("linear-quadratic-settings").style.display = "none";
+        document.getElementById("manual-settings").style.display = "none";
+        document.getElementById("pid-settings").style.display = "none";
+        document.getElementById("linear-temperature-settings").style.display = "none";
+        document.getElementById("manual-temperature-settings").style.display = "none";
+        document.getElementById("direct-power-summary").style.display = "none";
+
+        // Show the selected settings section
+        if (selectedValue === "direct-power") {
+            document.getElementById("direct-power-settings").style.display = "block";
+            var interpolation = document.getElementById("interpolation").value;
+            if (interpolation === "linear" || interpolation === "quadratic") {
+                document.getElementById("linear-quadratic-settings").style.display = "block";
+            } else if (interpolation === "manual") {
+                document.getElementById("manual-settings").style.display = "block";
+            }
+        } else if (selectedValue === "pid") {
+            document.getElementById("pid-settings").style.display = "block";
+            var temperaturePoints = document.getElementById("temperature-points").value;
+            if (temperaturePoints === "linear") {
+                document.getElementById("linear-temperature-settings").style.display = "block";
+            } else if (temperaturePoints === "manual") {
+                document.getElementById("manual-temperature-settings").style.display = "block";
+            }
         }
     }
-});
+
+    function generateTSweep() {
+        let mode = document.getElementById("sweep-mode").value;
+        let json;
+        let putData = false;
+
+        if (mode === "direct-power") {
+            let interpolation = document.getElementById("interpolation").value;
+
+            if (interpolation === "linear" || interpolation === "quadratic") {
+                json = JSON.stringify({
+                    sweep_mode: mode,
+                    interpolation: interpolation,
+                    client_timeout: document.getElementById("client-timeout").value,
+                    ret_base: document.getElementById("return-to-base").checked,
+                    min_pow: document.getElementById("min-power").value,
+                    max_pow: document.getElementById("max-power").value,
+                    n_pow: document.getElementById("power-steps").value,
+                    therm_time: document.getElementById("thermalization-time").value,
+                })
+                putData = true;
+            } else if (interpolation === "manual") {
+                json = JSON.stringify({
+                    sweep_mode: mode,
+                    interpolation: interpolation,
+                    client_timeout: document.getElementById("client-timeout").value,
+                    ret_base: document.getElementById("return-to-base").checked,
+                    values: document.getElementById("manual-input").value,
+                    therm_time: document.getElementById("thermalization-time").value,
+                })
+                putData = true;
+            }
+        } else if (mode === 'pid') {
+            alert("PID mode is not available yet.")
+        }
+
+        if (putData) {
+            var xhr = new XMLHttpRequest();
+            xhr.responseType = "json";
+            xhr.open("POST", "/temperature-sweep/generate", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onload = function () {
+                resp = xhr.response
+                if (document.getElementById("sweep-mode").value === "direct-power") {
+                    document.getElementById("summary-mode").textContent = "Direct Power, " + resp.interpolation + " interpolation";
+                    document.getElementById("summary-values").textContent = resp.vals;
+                    document.getElementById("summary-therm-time").textContent = resp.therm_time;
+                    document.getElementById("summary-cl-timeout").textContent = resp.cl_timeout;
+                    document.getElementById("summary-ret-base").textContent = "Cryostat will " + resp.ret_base + " to base temperature.";
+                    document.getElementById("summary-ret-base").style.fontWeight = 'bold';
+                }
+
+                document.getElementById("direct-power-summary").style.display = "block";
+                document.getElementById("confirm-tsweep").style.display = "block";
+            };
+            xhr.send(json);
+        }
+    }
+
+    function generateBtnClicked() {
+        verifyMultiLineFloatInput();
+        generateTSweep();
+    }
+
+    function verifyMultiLineFloatInput() {
+        let manual = false;
+        let elementID = "";
+        if (document.getElementById("sweep-mode").value === "direct-power" && document.getElementById("interpolation").value === "manual") {
+            elementID = "manual-input";
+            manual = true;
+        } else if (document.getElementById("sweep-mode").value === "pid" && document.getElementById("temperature-points").value === "manual") {
+            elementID = "manual-temperature-input";
+            manual = true;
+        }
+
+        if (manual) {
+            let lines = document.getElementById(elementID).value.split(/\r?\n/);
+            let i = 1;
+            for (const line of lines) {
+                let match = /^\d*\.?\d*$/.test(line);
+                if (!match) {
+                    alert("Invalid sweep value in line " + i + ": " + line)
+                }
+                i++;
+            }
+        }
+
+    }
+
+    // Restricts input for the given textbox to the given inputFilter function.
+    function setInputFilter(textboxes, inputFilter, errMsg) {
+        for (const textbox of textboxes) {
+            ["input", "keydown", "keyup", "mousedown", "mouseup", "select", "contextmenu", "drop", "focusout"].forEach(function (event) {
+                textbox.addEventListener(event, function (e) {
+                    if (inputFilter(this.value)) {
+                        // Accepted value.
+                        if (["keydown", "mousedown", "focusout"].indexOf(e.type) >= 0) {
+                            this.classList.remove("input-error");
+                            this.setCustomValidity("");
+                        }
+
+                        this.oldValue = this.value;
+                        this.oldSelectionStart = this.selectionStart;
+                        this.oldSelectionEnd = this.selectionEnd;
+                    } else if (this.hasOwnProperty("oldValue")) {
+                        // Rejected value: restore the previous one.
+                        this.classList.add("input-error");
+                        this.setCustomValidity(errMsg);
+                        this.reportValidity();
+                        this.value = this.oldValue;
+                        this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+                    } else {
+                        // Rejected value: nothing to restore.
+                        this.value = "";
+                    }
+                });
+            });
+        }
+    }
+
+    window.onload = adjustContentToSweepMode;
+
+    document.getElementById("sweep-mode").addEventListener("change", adjustContentToSweepMode);
+
+    document.getElementById("interpolation").addEventListener("change", function () {
+        let selectedValue = this.value;
+
+        if (selectedValue === "linear" || selectedValue === "quadratic") {
+            document.getElementById("linear-quadratic-settings").style.display = "block";
+            document.getElementById("manual-settings").style.display = "none";
+        } else if (selectedValue === "manual") {
+            document.getElementById("linear-quadratic-settings").style.display = "none";
+            document.getElementById("manual-settings").style.display = "block";
+        }
+
+        document.getElementById("direct-power-summary").style.display = "none";
+    })
+
+    document.getElementById("temperature-points").addEventListener("change", function () {
+        let selectedValue = this.value;
+
+        if (selectedValue === "linear") {
+            document.getElementById("linear-temperature-settings").style.display = "block";
+            document.getElementById("manual-temperature-settings").style.display = "none";
+        } else if (selectedValue === "manual") {
+            document.getElementById("linear-temperature-settings").style.display = "none";
+            document.getElementById("manual-temperature-settings").style.display = "block";
+        }
+
+        document.getElementById("direct-power-summary").style.display = "none";
+    })
 </script>
 {% endblock %}

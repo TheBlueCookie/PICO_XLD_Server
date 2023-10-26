@@ -11,6 +11,7 @@ from tempcomm import XLDTempHandler
 from database_sqlite import ServerDB
 from passkey import key, users, blueftc_ip, xld_ip
 from event_logger import flask_file_handler, file_handler, console_handler
+from temperature_sweep import TemperatureSweepManager
 
 db = ServerDB()
 db.prep_tables()
@@ -36,7 +37,9 @@ def exec_flask():
     # # app.logger.removeHandler(flask.logging.default_handler)
     # wrkzg_logger.setLevel(logging.INFO)
     # serve(app, host=xld_ip)
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
     app.run()
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -58,10 +61,25 @@ def meas_dereg():
 
     return json.dumps({'deregistered': True})
 
-@app.route('/temperature-sweep')
+
+@app.route('/temperature-sweep', methods=['GET'])
 @flask_login.login_required
 def temperature_sweep():
-    return render_template('temperature_sweep.html')
+    if request.method == 'GET':
+        return render_template('temperature_sweep.html', sweep=TemperatureSweepManager().html_dict)
+
+
+@app.route('/temperature-sweep/generate', methods=['POST'])
+@flask_login.login_required
+def generate_temp_sweep():
+        payload = json_request_handler()
+
+        t_sweep_manager = TemperatureSweepManager()
+        t_sweep_manager.generate_sweep_array(params=payload)
+        print(payload)
+        print(t_sweep_manager.html_dict)
+
+        return json.dumps(t_sweep_manager.html_dict)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -96,8 +114,9 @@ def meas_status_get():
         elif 'delete' in payload.keys() and payload['delete']:
             meas_info = db.get_single_meas_dict(meas_id=payload['meas_id'])
             db.deregister_measurement(meas_id=meas_info['id'])
-            flash(f"Deleted measurement client") # run by {meas_info['user']} ({meas_info['group']})")
+            flash(f"Deleted measurement client")  # run by {meas_info['user']} ({meas_info['group']})")
             return redirect('/meas/status')
+
 
 @app.route('/meas/status/set', methods=['POST'])
 def meas_status_set_post():
