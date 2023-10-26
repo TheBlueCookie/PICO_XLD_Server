@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="temperature-sweep">
+    <h2>Temperature Sweep Page</h2>
+    <label for="sweep-mode">Sweep Mode:</label>
+    <select id="sweep-mode" name="sweep-mode">
+        <option value="direct-power">Direct Power</option>
+        <option value="pid">PID</option>
+    </select>
+
+    <div id="direct-power-settings" style="display: none;">
+        <h3>Direct Power Settings</h3>
+        <label for="interpolation">Interpolation:</label>
+        <select id="interpolation" name="interpolation">
+            <option value="linear">Linear</option>
+            <option value="quadratic">Quadratic</option>
+            <option value="manual">Manual</option>
+        </select>
+        <div id="linear-quadratic-settings" style="display: none;">
+            <label for="min-power">Minimum Power:</label>
+            <input type="text" id="min-power" name="min-power">
+            <label for="max-power">Maximum Power:</label>
+            <input type="text" id="max-power" name="max-power">
+            <label for="power-steps">Power Steps:</label>
+            <input type="text" id="power-steps" name="power-steps">
+        </div>
+        <div id="manual-settings" style="display: none;">
+            <label for="manual-input">Manual Input:</label>
+            <textarea id="manual-input" name="manual-input"></textarea>
+        </div>
+        <label for="thermalization-time">Thermalization Time:</label>
+        <input type="text" id="thermalization-time" name="thermalization-time">
+    </div>
+
+    <div id="pid-settings" style="display: none;">
+        <h3>PID Settings</h3>
+        <label for="p-value">P:</label>
+        <input type="text" id="p-value" name="p-value">
+        <label for="i-value">I:</label>
+        <input type="text" id="i-value" name="i-value">
+        <label for="d-value">D:</label>
+        <input type="text" id="d-value" name="d-value">
+        <label for="temperature-points">Temperature Points:</label>
+        <select id="temperature-points" name="temperature-points">
+            <option value="linear">Linear</option>
+            <option value="manual">Manual</option>
+        </select>
+        <div id="linear-temperature-settings" style="display: none;">
+            <label for="min-temperature">Minimum Temperature:</label>
+            <input type="text" id="min-temperature" name="min-temperature">
+            <label for="max-temperature">Maximum Temperature:</label>
+            <input type="text" id="max-temperature" name="max-temperature">
+            <label for="temperature-steps">Temperature Steps:</label>
+            <input type="text" id="temperature-steps" name="temperature-steps">
+        </div>
+        <div id="manual-temperature-settings" style="display: none;">
+            <label for="manual-temperature-input">Manual Input:</label>
+            <textarea id="manual-temperature-input" name="manual-temperature-input"></textarea>
+        </div>
+    </div>
+
+    <label for="client-timeout">Client Timeout:</label>
+    <input type="text" id="client-timeout" name="client-timeout">
+    <input type="checkbox" id="return-to-base" name="return-to-base">
+    <label for="return-to-base">Return to base temperature once sweep is done.</label>
+    <button class="button" id="broadcast-parameters">Broadcast Parameters</button>
+    <button class="button" id="start-sweep">Start Temperature Sweep</button>
+</div>
+
+<script>
+document.getElementById("sweep-mode").addEventListener("change", function () {
+    var selectedValue = this.value;
+
+    // Hide all settings sections
+    document.getElementById("direct-power-settings").style.display = "none";
+    document.getElementById("linear-quadratic-settings").style.display = "none";
+    document.getElementById("manual-settings").style.display = "none";
+    document.getElementById("pid-settings").style.display = "none";
+    document.getElementById("linear-temperature-settings").style.display = "none";
+    document.getElementById("manual-temperature-settings").style.display = "none";
+
+    // Show the selected settings section
+    if (selectedValue === "direct-power") {
+        document.getElementById("direct-power-settings").style.display = "block";
+        var interpolation = document.getElementById("interpolation").value;
+        if (interpolation === "linear" || interpolation === "quadratic") {
+            document.getElementById("linear-quadratic-settings").style.display = "block";
+        } else if (interpolation === "manual") {
+            document.getElementById("manual-settings").style.display = "block";
+        }
+    } else if (selectedValue === "pid") {
+        document.getElementById("pid-settings").style.display = "block";
+        var temperaturePoints = document.getElementById("temperature-points").value;
+        if (temperaturePoints === "linear") {
+            document.getElementById("linear-temperature-settings").style.display = "block";
+        } else if (temperaturePoints === "manual") {
+            document.getElementById("manual-temperature-settings").style.display = "block";
+        }
+    }
+});
+</script>
+{% endblock %}
