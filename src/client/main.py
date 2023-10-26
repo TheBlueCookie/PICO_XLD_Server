@@ -44,7 +44,7 @@ class XLDMeasClient:
         response = self._generic_request(path=self._make_endpoint('meas', 'deregister'), payload=payload)
         return response['deregistered']
 
-    def listen(self):
+    def listen(self, autostart=True):
         while True:
             sleep(self.update_interval)
             payload = {'id': self.id}
@@ -52,6 +52,8 @@ class XLDMeasClient:
             print(f'Pinged server. Response: {response}')
             try:
                 if response['signal'] == 'go':
+                    if autostart:
+                        self.started()
                     return True
             except TypeError as ex:
                 print("Error on server side. Wrong response received.")
@@ -71,10 +73,26 @@ class XLDMeasClient:
     def open_session(self):
         self._register()
         print(f"Registered at {self.server_ip}. API ID: {self.id}")
+        print("Waiting for sweep info broadcast.")
+        self._wait_for_sweep_info()
 
     def close_session(self):
         if self._deregister():
             print("Deregistered successfully.")
+
+    def _wait_for_sweep_info(self):
+        while True:
+            sleep(self.update_interval)
+            response = self._generic_request(path=self._make_endpoint('temperature-sweep', 'info'))
+            print(f'Pinged server. Response: {response}')
+            try:
+                if response['confirmed']:
+                    n_sweep = response['sweep_points']
+                    timeout = response['client_timeout']
+                    return n_sweep, timeout
+
+            except TypeError or KeyError as ex:
+                print("Error on server side. Wrong response received.")
 
     def get_mxc_temp(self):
         response = self._generic_request(path= self._make_endpoint('temps', 'mxc'))

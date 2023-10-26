@@ -74,10 +74,13 @@ class TemperatureSweepManager:
         self.html_dict = {}
         self.return_to_base = False
         self.params = {}
+        self.confirmed = False
+        self.client_dict = {}
 
         self.generate_html_dict()
 
     def generate_sweep_array(self, params: dict):
+        self.confirmed = False
         assert 'sweep_mode' in params.keys() and 'interpolation' in params.keys()
         assert 'client_timeout' in params.keys()
         assert 'ret_base' in params.keys()
@@ -128,6 +131,7 @@ class TemperatureSweepManager:
         self.generate_html_dict()
 
     def generate_html_dict(self):
+        assert not self.confirmed
         ret = 'RETURN' if self.return_to_base else 'NOT RETURN'
         html_dict = {'sweep_mode': self.mode, 'interpolation': self.interpolation,
                      'vals': [f' {v:.0f}' for v in self.sweep_array],
@@ -137,3 +141,8 @@ class TemperatureSweepManager:
             html_dict['therm_time'] = self.therm_time
 
         self.html_dict = html_dict
+
+    def confirm(self):
+        assert not self.confirmed
+        self.confirmed = True
+        self.client_dict = {'confirmed': True, 'sweep_points': len(self.sweep_array), 'client_timeout': self.cl_timeout}

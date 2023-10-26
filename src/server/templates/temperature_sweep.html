@@ -141,10 +141,9 @@
 </div>
 
 <button class="button" id="generate-tsweep" onclick="generateBtnClicked()">Generate Sweep Points</button>
-<button class="button" id="start-sweep" style="display: none">Start Temperature Sweep</button>
 
 <div id="direct-power-summary" style="display: none">
-    <h3>Generated Sweep</h3>
+    <h3 id="sweep-sum-header">Generated Sweep</h3>
     <div class="row">
         <div class="column">
             <span class="sum-item">Mode:</span><br>
@@ -165,7 +164,10 @@
 <button class="button" id="confirm-tsweep" style="display: none" onclick="confirmSweepClicked()">Confirm Sweep
     Parameters
 </button>
-<button class="button danger-button" id="broadcast-parameters" style="display: none">Broadcast Parameters</button>
+<button class="button danger-button" id="broadcast-parameters" style="display: none" onclick="broadcastBtnClicked()">
+    Broadcast Parameters
+</button>
+<button class="button danger-button" id="start-sweep" style="display: none">Start Temperature Sweep</button>
 
 <script>
 
@@ -186,6 +188,28 @@
         document.getElementById("generate-tsweep").style.display = "none";
         document.getElementById("confirm-tsweep").style.display = "none";
         document.getElementById("broadcast-parameters").style.display = "block";
+        document.getElementById("sweep-sum-header").textContent = "Confirmed Sweep Parameters";
+    }
+
+    function onloadFunction() {
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open("GET", "/temperature-sweep/info", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+            resp = xhr.response
+            if (resp.confirmed) {
+                document.getElementById("sweep-setup").style.display = "none";
+                document.getElementById("broadcast-parameters").style.display = "none";
+                document.getElementById("generate-tsweep").style.display = "none";
+                document.getElementById("start-sweep").style.display = "block";
+                document.getElementById("sweep-sum-header").textContent = "Broadcasted Sweep Parameters";
+                getSweepParams(false, null);
+            } else {
+                adjustContentToSweepMode();
+            }
+        };
+        xhr.send();
     }
 
     function adjustContentToSweepMode() {
@@ -199,6 +223,7 @@
         document.getElementById("linear-temperature-settings").style.display = "none";
         document.getElementById("manual-temperature-settings").style.display = "none";
         document.getElementById("direct-power-summary").style.display = "none";
+        document.getElementById("confirm-tsweep").style.display = "none";
 
         // Show the selected settings section
         if (selectedValue === "direct-power") {
@@ -256,31 +281,64 @@
         }
 
         if (putData) {
-            var xhr = new XMLHttpRequest();
-            xhr.responseType = "json";
-            xhr.open("POST", "/temperature-sweep/generate", true);
-            xhr.setRequestHeader("Content-Type", "application/json");
-            xhr.onload = function () {
-                resp = xhr.response
-                if (document.getElementById("sweep-mode").value === "direct-power") {
-                    document.getElementById("summary-mode").textContent = "Direct Power, " + resp.interpolation + " interpolation";
-                    document.getElementById("summary-values").textContent = resp.vals;
-                    document.getElementById("summary-therm-time").textContent = resp.therm_time;
-                    document.getElementById("summary-cl-timeout").textContent = resp.cl_timeout;
-                    document.getElementById("summary-ret-base").textContent = "Cryostat will " + resp.ret_base + " to base temperature.";
-                    document.getElementById("summary-ret-base").style.fontWeight = 'bold';
-                }
+            getSweepParams(true, json);
+            document.getElementById("confirm-tsweep").style.display = "block";
+        }
+    }
 
-                document.getElementById("direct-power-summary").style.display = "block";
-                document.getElementById("confirm-tsweep").style.display = "block";
-            };
+    function getSweepParams(generate, json) {
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        if (generate) {
+            xhr.open("POST", "/temperature-sweep/generate", true);
+        }
+
+        else {
+            xhr.open("GET", "/temperature-sweep/params", true);
+        }
+
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+            resp = xhr.response
+            if (document.getElementById("sweep-mode").value === "direct-power") {
+                document.getElementById("summary-mode").textContent = "Direct Power, " + resp.interpolation + " interpolation";
+                document.getElementById("summary-values").textContent = resp.vals;
+                document.getElementById("summary-therm-time").textContent = resp.therm_time;
+                document.getElementById("summary-cl-timeout").textContent = resp.cl_timeout;
+                document.getElementById("summary-ret-base").textContent = "Cryostat will " + resp.ret_base + " to base temperature.";
+                document.getElementById("summary-ret-base").style.fontWeight = 'bold';
+            }
+
+            document.getElementById("direct-power-summary").style.display = "block";
+        };
+
+        if (generate) {
             xhr.send(json);
         }
+        else {
+            xhr.send();
+        }
+
     }
 
     function generateBtnClicked() {
         verifyMultiLineFloatInput();
         generateTSweep();
+    }
+
+    function broadcastBtnClicked() {
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open("POST", "/temperature-sweep/broadcast", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+            resp = xhr.response
+            if (resp.confirmed) {
+                document.getElementById("broadcast-parameters").style.display = "none";
+                document.getElementById("start-sweep").style.display = "block";
+            }
+        };
+        xhr.send(JSON.stringify({'broadcast': true,}));
     }
 
     function verifyMultiLineFloatInput() {
@@ -339,7 +397,7 @@
         }
     }
 
-    window.onload = adjustContentToSweepMode;
+    window.onload = onloadFunction();
 
     document.getElementById("sweep-mode").addEventListener("change", adjustContentToSweepMode);
 
@@ -355,6 +413,7 @@
         }
 
         document.getElementById("direct-power-summary").style.display = "none";
+        document.getElementById("confirm-tsweep").style.display = "none";
     })
 
     document.getElementById("temperature-points").addEventListener("change", function () {
@@ -369,6 +428,7 @@
         }
 
         document.getElementById("direct-power-summary").style.display = "none";
+        document.getElementById("confirm-tsweep").style.display = "none";
     })
 </script>
 {% endblock %}

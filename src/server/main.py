@@ -23,6 +23,8 @@ login_manager = LoginManager()
 login_manager.login_view = 'login'
 login_manager.init_app(app)
 
+t_sweep_manager = TemperatureSweepManager()
+
 
 class User(UserMixin):
     def __init__(self, id):
@@ -66,7 +68,7 @@ def meas_dereg():
 @flask_login.login_required
 def temperature_sweep():
     if request.method == 'GET':
-        return render_template('temperature_sweep.html', sweep=TemperatureSweepManager().html_dict)
+        return render_template('temperature_sweep.html', sweep=t_sweep_manager.html_dict)
 
 
 @app.route('/temperature-sweep/generate', methods=['POST'])
@@ -74,12 +76,36 @@ def temperature_sweep():
 def generate_temp_sweep():
         payload = json_request_handler()
 
-        t_sweep_manager = TemperatureSweepManager()
         t_sweep_manager.generate_sweep_array(params=payload)
-        print(payload)
-        print(t_sweep_manager.html_dict)
 
         return json.dumps(t_sweep_manager.html_dict)
+
+
+@app.route('/temperature-sweep/broadcast', methods=['POST'])
+@flask_login.login_required
+def broadcast_temp_sweep():
+        payload = json_request_handler()
+
+        if payload['broadcast']:
+            t_sweep_manager.confirm()
+
+        return json.dumps({'confirmed': True})
+
+
+@app.route('/temperature-sweep/info', methods=['GET'])
+@flask_login.login_required
+def info_temp_sweep():
+        if t_sweep_manager.confirmed:
+            return json.dumps(t_sweep_manager.client_dict)
+
+        else:
+            return json.dumps({'confirmed': False})
+
+@app.route('/temperature-sweep/params', methods=['GET'])
+@flask_login.login_required
+def params_temp_sweep():
+        if t_sweep_manager.confirmed:
+            return json.dumps(t_sweep_manager.html_dict)
 
 
 @app.route("/login", methods=["GET", "POST"])
