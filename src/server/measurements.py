@@ -4,6 +4,7 @@ from datetime import datetime
 WAIT = 'waiting'
 GO = 'go'
 RUNNING = 'running'
+CRASHED = 'crashed'
 
 
 @dataclass

@@ -1,13 +1,16 @@
+import logging
 from multiprocessing import Process
+from waitress import serve
+
 from flask import Flask, request, render_template, redirect, url_for, flash
 import flask_login
 from flask_login import LoginManager, UserMixin
 import json
-from time import sleep
 
 from tempcomm import XLDTempHandler
 from database_sqlite import ServerDB
-from passkey import key, users, blueftc_ip
+from passkey import key, users, blueftc_ip, xld_ip
+from event_logger import flask_file_handler, file_handler, console_handler
 
 db = ServerDB()
 db.prep_tables()
@@ -26,6 +29,13 @@ class User(UserMixin):
 
 
 def exec_flask():
+    # wrkzg_logger = logging.getLogger('werkzeug')
+    # wrkzg_logger.addHandler(flask_file_handler)
+    # # wrkzg_logger.addHandler(file_handler)
+    # wrkzg_logger.addHandler(console_handler)
+    # # app.logger.removeHandler(flask.logging.default_handler)
+    # wrkzg_logger.setLevel(logging.INFO)
+    # serve(app, host=xld_ip)
     app.run()
 
 @login_manager.user_loader
@@ -47,6 +57,11 @@ def meas_dereg():
     db.deregister_measurement(meas_id=cont['id'])
 
     return json.dumps({'deregistered': True})
+
+@app.route('/temperature-sweep')
+@flask_login.login_required
+def temperature_sweep():
+    return render_template('temperature_sweep.html')
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -87,7 +102,10 @@ def meas_status_get():
 @app.route('/meas/status/set', methods=['POST'])
 def meas_status_set_post():
     payload = json_request_handler()
-    db.set_meas_status(meas_id=payload['id'], status=payload['running'])
+    if not db.get_single_meas_dict(meas_id=payload['id'])['crashed']:
+        db.set_meas_status(meas_id=payload['id'], status=payload['running'])
+    else:
+        pass
 
     return json.dumps({'running': True})
 
@@ -162,9 +180,10 @@ def exec_tcontrol():
     tccontrol.exec()
 
 
-flask_server = Process(target=exec_flask, name='Flask Process')
-tc_process = Process(target=exec_tcontrol, name='Temp Controller')
+flask_server = Process(target=exec_flask, name='XLD Server')
+tc_process = Process(target=exec_tcontrol, name='Temperature Controller')
 
 if __name__ == "__main__":
-    flask_server.start()
+    # flask_server.start()
+    exec_flask()
     # tc_process.start()
