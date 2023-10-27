@@ -99,7 +99,7 @@ body {
     width: 50%;
 }
 
-label, input, .sum-item {
+label, input, .sum-item, .alert-info {
     margin-bottom: 5px;
     margin-top: 5px;
     display: inline-block;
@@ -138,5 +138,9 @@ button:hover {
 
 .very-danger-button:hover {
     background-color: red;
+}
+
+.alert-info {
+    color: #d15c38;
 }
 

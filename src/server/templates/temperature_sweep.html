@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<span id="alert-info"></span>
+<span id="alert-info" class="alert-info"></span>
 
 <div class="temperature-sweep" id="sweep-setup">
     <h2>Temperature Sweep Setup</h2>
@@ -237,6 +237,7 @@
                 document.getElementById("start-sweep").style.display = "block";
                 document.getElementById("abort-sweep").style.display = "none";
                 document.getElementById("sweep-sum-header").textContent = "Broadcasted Sweep Parameters";
+                document.getElementById("alert-info").style.display = "none";
                 getSweepParams(false, null);
             } else {
                 adjustContentToSweepMode();
@@ -259,6 +260,7 @@
         document.getElementById("confirm-tsweep").style.display = "none";
         document.getElementById("start-sweep").style.display = "none";
         document.getElementById("abort-sweep").style.display = "none";
+        document.getElementById("alert-info").style.display = "none";
 
         // Show the selected settings section
         if (selectedValue === "direct-power") {
@@ -270,6 +272,8 @@
                 document.getElementById("manual-settings").style.display = "block";
             }
         } else if (selectedValue === "pid") {
+            document.getElementById("alert-info").style.display = "block";
+            document.getElementById("alert-info").textContent = "PID mode is not available yet."
             document.getElementById("pid-settings").style.display = "block";
             var temperaturePoints = document.getElementById("temperature-points").value;
             if (temperaturePoints === "linear") {
