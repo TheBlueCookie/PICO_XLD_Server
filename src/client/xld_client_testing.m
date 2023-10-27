@@ -1,9 +1,11 @@
-xld_client = XLDMeasClient(ip, "Elias", "PICO", 5000, 5)
-xld_client.openSession()
-xld_client.getBaseTemp()
+xld_client = XLDMeasClient('127.0.0.1', "Elias", "PICO", 5000, 5);
+[n_sweep, timeout] = xld_client.openSession();
+xld_client.getMXCTemp();
 
-xld_client.listen())
-xld_client.started()
-pause(15)
-xld_client.stopped()
+for i = 1:n_sweep
+    xld_client.listen()
+    pause(15)
+    xld_client.stopped()
+end
+
 xld_client.closeSession();

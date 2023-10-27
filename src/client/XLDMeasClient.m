@@ -94,10 +94,10 @@ classdef XLDMeasClient < handle
             while true
                 pause(obj.update_interval);
                 response = obj.genericRequest(obj.makeEndpoint('temperature-sweep', 'info'));
-                disp(['Pinged server. Parameters confirmed: ' response.confirmed]);
+                disp(['Pinged server. Parameters confirmed: ' num2str(response.confirmed)]);
                 if response.confirmed
-                    n_sweep = response.n_sweep;
-                    client_timeout = response.client_timeout;
+                    n_sweep = response.sweep_points;
+                    client_timeout = str2double(response.client_timeout);
                     return;
                 end
             end
