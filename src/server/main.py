@@ -1,5 +1,7 @@
 import logging
-from multiprocessing import Process
+from multiprocessing import Process, Event
+
+import flask
 from waitress import serve
 
 from flask import Flask, request, render_template, redirect, url_for, flash
@@ -11,7 +13,7 @@ from tempcomm import XLDTempHandler
 from database_sqlite import ServerDB
 from passkey import key, users, blueftc_ip, xld_ip
 from event_logger import flask_file_handler, file_handler, console_handler
-from temperature_sweep import TemperatureSweepManager
+from temperature_sweep import TemperatureSweepManager, TemperatureSweep
 
 db = ServerDB()
 db.prep_tables()
@@ -24,6 +26,9 @@ login_manager.login_view = 'login'
 login_manager.init_app(app)
 
 t_sweep_manager = TemperatureSweepManager()
+
+abort = Event()
+sweep_running = Event()
 
 
 class User(UserMixin):
@@ -74,38 +79,80 @@ def temperature_sweep():
 @app.route('/temperature-sweep/generate', methods=['POST'])
 @flask_login.login_required
 def generate_temp_sweep():
-        payload = json_request_handler()
+    payload = json_request_handler()
 
-        t_sweep_manager.generate_sweep_array(params=payload)
+    t_sweep_manager.generate_sweep_array(params=payload)
 
-        return json.dumps(t_sweep_manager.html_dict)
+    return json.dumps(t_sweep_manager.html_dict)
 
 
-@app.route('/temperature-sweep/broadcast', methods=['POST'])
+@app.route('/temperature-sweep/broadcast-start', methods=['POST'])
 @flask_login.login_required
 def broadcast_temp_sweep():
-        payload = json_request_handler()
+    payload = json_request_handler()
 
-        if payload['broadcast']:
-            t_sweep_manager.confirm()
+    if payload['broadcast']:
+        t_sweep_manager.confirm()
+        return json.dumps({'confirmed': True, 'started': False})
 
-        return json.dumps({'confirmed': True})
+    elif payload['start']:
+        print(payload)
+        if not t_sweep_manager.started and not sweep_running.is_set():
+            t_sweep = TemperatureSweep(thermalization_time=float(t_sweep_manager.therm_time) * 60,
+                                       power_array=t_sweep_manager.sweep_array,
+                                       client_timeout=float(t_sweep_manager.cl_timeout) * 60,
+                                       abort_flag=abort, is_running=sweep_running, test_mode=True,
+                                       return_to_base=t_sweep_manager.return_to_base)
+            t_sweep_manager.start_sweep()
+            sweep_running.set()
+            t_sweep_process = Process(target=t_sweep.exec(), name='Temperature Sweep')
+            t_sweep_process.start()
+
+        return json.dumps({'confirmed': True, 'sweep_started': True})
+
+
+@app.route('/temperature-sweep/abort', methods=['GET'])
+@flask_login.login_required
+def abort_temp_sweep():
+    if t_sweep_manager.started and sweep_running.is_set():
+        print('Abort sweep initiated.')
+        abort.set()
+        t_sweep_manager.clear()
+        return json.dumps({'aborted': False, 'initiated': True})
+
+    elif not sweep_running.is_set():
+        print("Abort confirmed.")
+        abort.clear()
+        return json.dumps({'aborted': True, 'initiated': True})
+
+    else:
+        return json.dumps({'aborted': False, 'initiated': False})
 
 
 @app.route('/temperature-sweep/info', methods=['GET'])
-@flask_login.login_required
+# @flask_login.login_required
 def info_temp_sweep():
-        if t_sweep_manager.confirmed:
-            return json.dumps(t_sweep_manager.client_dict)
+    print('confirmed:', t_sweep_manager.confirmed, '-- started: ', t_sweep_manager.started)
+    print('abort event: ', abort.is_set(), '-- running event: ', sweep_running.is_set())
+    if not sweep_running.is_set() and t_sweep_manager.started:
+        t_sweep_manager.clear()
+        return json.dumps({'abort_in_progress': False, 'confirmed': False, 'sweep_started': False})
 
-        else:
-            return json.dumps({'confirmed': False})
+    elif t_sweep_manager.confirmed or t_sweep_manager.started:
+        return json.dumps(t_sweep_manager.client_dict)
+
+    elif abort.is_set() and sweep_running.is_set():
+        return json.dumps({'abort_in_progress': True})
+
+    else:
+        return json.dumps({'abort_in_progress': False, 'confirmed': False, 'sweep_started': False})
+
 
 @app.route('/temperature-sweep/params', methods=['GET'])
 @flask_login.login_required
 def params_temp_sweep():
-        if t_sweep_manager.confirmed:
-            return json.dumps(t_sweep_manager.html_dict)
+    if t_sweep_manager.confirmed:
+        return json.dumps(t_sweep_manager.html_dict)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -166,6 +213,9 @@ def logout():
 @app.route("/control", methods=["GET", "POST"])
 @flask_login.login_required
 def control():
+    if sweep_running.is_set():
+        return render_template("not_available.html")
+
     if request.method == "POST":
         new_power = request.form.get("power")
         heater_id = request.form.get("heater select")
@@ -229,6 +279,6 @@ flask_server = Process(target=exec_flask, name='XLD Server')
 tc_process = Process(target=exec_tcontrol, name='Temperature Controller')
 
 if __name__ == "__main__":
-    # flask_server.start()
-    exec_flask()
+    flask_server.start()
+    # exec_flask()
     # tc_process.start()

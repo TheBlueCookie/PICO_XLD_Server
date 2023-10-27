@@ -58,7 +58,6 @@ class XLDMeasClient:
             except TypeError as ex:
                 print("Error on server side. Wrong response received.")
 
-
     def _running_update(self, running):
         payload = {'id': self.id, 'running': running}
         response = self._generic_request(path=self._make_endpoint('meas', 'status', 'set'), payload=payload)
@@ -74,7 +73,7 @@ class XLDMeasClient:
         self._register()
         print(f"Registered at {self.server_ip}. API ID: {self.id}")
         print("Waiting for sweep info broadcast.")
-        self._wait_for_sweep_info()
+        return self._wait_for_sweep_info()
 
     def close_session(self):
         if self._deregister():
@@ -89,7 +88,7 @@ class XLDMeasClient:
                 if response['confirmed']:
                     n_sweep = response['sweep_points']
                     timeout = response['client_timeout']
-                    return n_sweep, timeout
+                    return int(n_sweep), float(timeout)
 
             except TypeError or KeyError as ex:
                 print("Error on server side. Wrong response received.")

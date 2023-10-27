@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
+<span id="alert-info"></span>
+
 <div class="temperature-sweep" id="sweep-setup">
     <h2>Temperature Sweep Setup</h2>
     <div class="row">
@@ -161,13 +163,25 @@
     <span id="summary-ret-base" class="sum-item"><b></b></span>
 </div>
 
-<button class="button" id="confirm-tsweep" style="display: none" onclick="confirmSweepClicked()">Confirm Sweep
-    Parameters
-</button>
-<button class="button danger-button" id="broadcast-parameters" style="display: none" onclick="broadcastBtnClicked()">
-    Broadcast Parameters
-</button>
-<button class="button danger-button" id="start-sweep" style="display: none">Start Temperature Sweep</button>
+
+<div class="row" id="buttons">
+    <div class="column">
+        <button class="button" id="confirm-tsweep" style="display: none" onclick="confirmSweepClicked()">
+            Confirm Sweep Parameters
+        </button>
+        <button class="button danger-button" id="broadcast-parameters" style="display: none"
+                onclick="broadcastBtnClicked()">
+            Broadcast Parameters
+        </button>
+        <button class="button danger-button" id="start-sweep" style="display: none" onclick="startSweepBtnClicked()">
+            Start Temperature Sweep
+        </button>
+    </div>
+    <div class="column">
+        <button class="button very-danger-button" id="abort-sweep" style="display: none" onclick="abortBtnClicked()"> Abort</button>
+    </div>
+</div>
+
 
 <script>
 
@@ -198,11 +212,30 @@
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.onload = function () {
             resp = xhr.response
-            if (resp.confirmed) {
+            if (resp.abort_in_progress) {
+                document.getElementById("abort-sweep").style.display = "none";
+                document.getElementById("direct-power-summary").style.display = "none";
+                document.getElementById("alert-info").style.display = "block";
+                document.getElementById("alert-info").textContent = "Sweep Abortion initiated...  Reload page periodically to check status."
+                document.getElementById("start-sweep").style.display = "none";
+                document.getElementById("sweep-setup").style.display = "none";
+                document.getElementById("generate-tsweep").style.display = "none";
+            }
+            else if (resp.sweep_started) {
+                document.getElementById("sweep-setup").style.display = "none";
+                document.getElementById("broadcast-parameters").style.display = "none";
+                document.getElementById("generate-tsweep").style.display = "none";
+                document.getElementById("start-sweep").style.display = "none";
+                document.getElementById("abort-sweep").style.display = "block";
+                document.getElementById("sweep-sum-header").textContent = "Sweep in Progress";
+                getSweepParams(false, null);
+
+            } else if (resp.confirmed) {
                 document.getElementById("sweep-setup").style.display = "none";
                 document.getElementById("broadcast-parameters").style.display = "none";
                 document.getElementById("generate-tsweep").style.display = "none";
                 document.getElementById("start-sweep").style.display = "block";
+                document.getElementById("abort-sweep").style.display = "none";
                 document.getElementById("sweep-sum-header").textContent = "Broadcasted Sweep Parameters";
                 getSweepParams(false, null);
             } else {
@@ -224,6 +257,8 @@
         document.getElementById("manual-temperature-settings").style.display = "none";
         document.getElementById("direct-power-summary").style.display = "none";
         document.getElementById("confirm-tsweep").style.display = "none";
+        document.getElementById("start-sweep").style.display = "none";
+        document.getElementById("abort-sweep").style.display = "none";
 
         // Show the selected settings section
         if (selectedValue === "direct-power") {
@@ -291,9 +326,7 @@
         xhr.responseType = "json";
         if (generate) {
             xhr.open("POST", "/temperature-sweep/generate", true);
-        }
-
-        else {
+        } else {
             xhr.open("GET", "/temperature-sweep/params", true);
         }
 
@@ -314,31 +347,74 @@
 
         if (generate) {
             xhr.send(json);
-        }
-        else {
+        } else {
             xhr.send();
         }
 
     }
 
     function generateBtnClicked() {
-        verifyMultiLineFloatInput();
-        generateTSweep();
+        if (verifyMultiLineFloatInput()) {
+            generateTSweep();
+        }
+
+    }
+
+    function abortBtnClicked() {
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open("GET", "/temperature-sweep/abort", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+            resp = xhr.response
+            if (resp.aborted) {
+                location.reload()
+            }
+
+            else if (resp.initiated) {
+                document.getElementById("abort-sweep").style.display = "none";
+                document.getElementById("direct-power-summary").style.display = "none";
+                document.getElementById("alert-info").style.display = "block";
+                document.getElementById("alert-info").textContent = "Sweep Abortation initiated...  Reload page periodically to check status."
+                document.getElementById("start-sweep").style.display = "none";
+            }
+        };
+        xhr.send();
+    }
+
+    function startSweepBtnClicked() {
+        var xhr = new XMLHttpRequest();
+        xhr.responseType = "json";
+        xhr.open("POST", "/temperature-sweep/broadcast-start", true);
+        xhr.setRequestHeader("Content-Type", "application/json");
+        // xhr.onload = function () {
+        //     resp = xhr.response
+        //     if (resp.sweep_started) {
+        //         document.getElementById("sweep-sum-header").textContent = "Sweep in Progress";
+        //         document.getElementById("start-sweep").style.display = "none";
+        //         document.getElementById("abort-sweep").style.display = "block";
+        //     }
+        // };
+        xhr.send(JSON.stringify({'broadcast': false, 'start': true}));
+        alert("Sweep Started!")
+        location.reload()
     }
 
     function broadcastBtnClicked() {
         var xhr = new XMLHttpRequest();
         xhr.responseType = "json";
-        xhr.open("POST", "/temperature-sweep/broadcast", true);
+        xhr.open("POST", "/temperature-sweep/broadcast-start", true);
         xhr.setRequestHeader("Content-Type", "application/json");
         xhr.onload = function () {
             resp = xhr.response
             if (resp.confirmed) {
                 document.getElementById("broadcast-parameters").style.display = "none";
                 document.getElementById("start-sweep").style.display = "block";
+                document.getElementById("abort-sweep").style.display = "none";
+                document.getElementById("sweep-sum-header").textContent = "Broadcasted Sweep Parameters";
             }
         };
-        xhr.send(JSON.stringify({'broadcast': true,}));
+        xhr.send(JSON.stringify({'broadcast': true, 'start': false}));
     }
 
     function verifyMultiLineFloatInput() {
@@ -358,11 +434,19 @@
             for (const line of lines) {
                 let match = /^\d*\.?\d*$/.test(line);
                 if (!match) {
-                    alert("Invalid sweep value in line " + i + ": " + line)
+                    alert("Invalid sweep value in line " + i + ": " + line);
+                    return false
                 }
                 i++;
             }
+
+            if (i === 2) {
+                alert("Enter at least two values.");
+                return false
+            }
         }
+
+        return true
 
     }
 

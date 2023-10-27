@@ -132,3 +132,11 @@ button:hover {
     background-color: #d15c38;
 }
 
+.very-danger-button {
+    background-color: #d15c38;
+}
+
+.very-danger-button:hover {
+    background-color: red;
+}
+

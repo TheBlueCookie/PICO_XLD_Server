@@ -1,23 +1,31 @@
+import sys
+
 from database_sqlite import ServerDB
 from passkey import db_filename
 
 import numpy as np
 from time import sleep
 from datetime import datetime
+from multiprocessing import Event
 
 
 class TemperatureSweep:
-    def __init__(self, thermalization_time, power_array, client_timeout, test_mode: bool = False):
-        self.thermalization_time = thermalization_time
-        self.power_array = power_array
+    def __init__(self, thermalization_time, power_array, client_timeout, return_to_base: bool = False,
+                 abort_flag: Event = Event(), is_running: Event = Event(), test_mode: bool = False):
+        self.thermalization_time = float(thermalization_time)
+        self.power_array = np.array(power_array)
         self.db = ServerDB(db_filename)
-        self.client_timeout = client_timeout
-        self.test_mode = test_mode
+        self.client_timeout = float(client_timeout)
+        self.test_mode = float(test_mode)
+        self.abort_flag = abort_flag
+        self.is_running = is_running
+        self.return_to_base = return_to_base
 
     def wait_for_all_clients(self):
         start = datetime.now()
         done = False
         while not done:
+            self._try_abort()
             done = True
             for signal, crashed in self.db.get_all_meas_signals():
                 if signal == 'running' or signal == 'go' and not crashed:
@@ -36,17 +44,20 @@ class TemperatureSweep:
         self.db.set_all_meas_to_go()
 
     def exec(self):
+        self.is_running.set()
         print(f'{datetime.now()}: Making sure that all clients are ready.')
         self.wait_for_all_clients()
         print(f'{datetime.now()}: Started sweep.')
 
         for i, power in enumerate(self.power_array):
+            self._try_abort()
             if not self.test_mode:
                 self.db.write_heater(index=self.db.mxc_ind, val=float(power))
             print(f'{datetime.now()}: Set heater power to {power} uW. '
                   f'Waiting {self.thermalization_time} s for thermalization.')
             if not self.test_mode:
                 sleep(self.thermalization_time)
+            self._try_abort()
             print(
                 f'{datetime.now()}: Thermalization done. Current temperature at mixing chamber: '
                 f'{self.db.read_temp(channel=self.db.mxc_ch)} K')
@@ -54,11 +65,28 @@ class TemperatureSweep:
             print(f'{datetime.now()}: Send GO signal to all measurement clients.')
             if not self.test_mode:
                 sleep(30)
+            self._try_abort()
             print(
                 f'{datetime.now()}: Waiting for all measurements to finish at current '
                 f'temperature point ({i + 1}/{len(self.power_array)}).')
             self.wait_for_all_clients()
             print(f'{datetime.now()}: All measurements finished at current temperature point.')
+            self._try_abort()
+
+        self.is_running.clear()
+        if not self.test_mode:
+            self.db.write_heater(index=self.db.mxc_ind, val=0)
+        print(f'{datetime.now()}: Returning to base temperature.')
+
+    def _try_abort(self):
+        if self.abort_flag.is_set():
+            self.abort_flag.clear()
+            self.is_running.clear()
+            print(f'{datetime.now()}: SWEEP ABORTED!')
+            sys.exit()
+
+        else:
+            return False
 
 
 class TemperatureSweepManager:
@@ -75,6 +103,7 @@ class TemperatureSweepManager:
         self.return_to_base = False
         self.params = {}
         self.confirmed = False
+        self.started = False
         self.client_dict = {}
 
         self.generate_html_dict()
@@ -145,4 +174,29 @@ class TemperatureSweepManager:
     def confirm(self):
         assert not self.confirmed
         self.confirmed = True
-        self.client_dict = {'confirmed': True, 'sweep_points': len(self.sweep_array), 'client_timeout': self.cl_timeout}
+        self.client_dict = {'abort_in_progress': False, 'confirmed': True, 'sweep_points': len(self.sweep_array),
+                            'client_timeout': self.cl_timeout}
+        print("Set to confirmed.")
+
+    def start_sweep(self):
+        assert not self.started and self.confirmed
+        self.started = True
+        self.client_dict = {'abort_in_progress': False, 'sweep_started': True, 'confirmed': True,
+                            'sweep_points': len(self.sweep_array),
+                            'client_timeout': self.cl_timeout}
+        print("Set to started.")
+
+    def clear(self):
+        self.mode = ''
+        self.interpolation = ''
+        self.cl_timeout = 0
+        self.therm_time = 0
+        self.sweep_array = np.zeros(1)
+        self.html_dict = {}
+        self.return_to_base = False
+        self.params = {}
+        self.confirmed = False
+        self.started = False
+        self.client_dict = {}
+
+        self.generate_html_dict()
