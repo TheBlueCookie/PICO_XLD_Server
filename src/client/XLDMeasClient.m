@@ -68,6 +68,7 @@ classdef XLDMeasClient < handle
                 disp(['Pinged server. Response: ' response.signal]);
                 if strcmp(response.signal, 'go')
                     flag = true;
+                    obj.started();
                     return;
                 end
             end
@@ -87,9 +88,19 @@ classdef XLDMeasClient < handle
             obj.runningUpdate(false);
         end
 
-        function openSession(obj)
+        function [n_sweep, client_timeout] = openSession(obj)
             obj.register();
             disp(['Registered at ' obj.server_ip '. API ID: ' num2str(obj.id)]);
+            while true
+                pause(obj.update_interval);
+                response = obj.genericRequest(obj.makeEndpoint('temperature-sweep', 'info'));
+                disp(['Pinged server. Parameters confirmed: ' response.confirmed]);
+                if response.confirmed
+                    n_sweep = response.n_sweep;
+                    client_timeout = response.client_timeout;
+                    return;
+                end
+            end
         end
 
         function closeSession(obj)
