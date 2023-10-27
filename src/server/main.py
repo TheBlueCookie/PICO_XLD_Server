@@ -1,8 +1,8 @@
-import logging
+# import logging
 from multiprocessing import Process, Event
 
-import flask
-from waitress import serve
+# import flask
+# from waitress import serve
 
 from flask import Flask, request, render_template, redirect, url_for, flash
 import flask_login
@@ -12,7 +12,7 @@ import json
 from tempcomm import XLDTempHandler
 from database_sqlite import ServerDB
 from passkey import key, users, blueftc_ip, xld_ip
-from event_logger import flask_file_handler, file_handler, console_handler
+# from event_logger import flask_file_handler, file_handler, console_handler
 from temperature_sweep import TemperatureSweepManager, TemperatureSweep
 
 db = ServerDB()
