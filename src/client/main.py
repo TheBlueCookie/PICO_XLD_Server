@@ -4,7 +4,7 @@ from time import sleep
 
 
 class XLDMeasClient:
-    def __init__(self, server_ip: str, user: str, group: str, server_port: int = 5000, update_interval: int = 30):
+    def __init__(self, server_ip: str, user: str, group: str, server_port: int = 8080, update_interval: int = 30):
         self.user = user
         self.group = group
         self.id = None
