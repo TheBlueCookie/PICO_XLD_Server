@@ -3,10 +3,12 @@ import secrets
 from datetime import datetime
 from multiprocessing import Lock
 import sqlite3 as sq
+import logging
 
 from measurements import WAIT, GO, RUNNING, CRASHED
 from passkey import db_filename
-from event_logger import xld_logger
+
+xld_logger = logging.getLogger('waitress')
 
 
 @dataclass

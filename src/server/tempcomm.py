@@ -3,6 +3,9 @@ from database_sqlite import ServerDB
 
 from time import sleep
 from numpy import isclose
+import logging
+
+xld_logger = logging.getLogger('waitress')
 
 
 class XLDTempHandler:
@@ -35,7 +38,7 @@ class XLDTempHandler:
         while True:
             self._update_temps()
             self._update_heaters()
-            print("Temperatures and heater power updated.")
+            xld_logger.info("Temperatures and heater power updated.")
             sleep(self.update_interval)
 
 

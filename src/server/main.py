@@ -1,8 +1,9 @@
-# import logging
+import logging
+from logging.handlers import TimedRotatingFileHandler
 from multiprocessing import Process, Event
 
 # import flask
-# from waitress import serve
+from waitress import serve
 
 from flask import Flask, request, render_template, redirect, url_for, flash
 import flask_login
@@ -12,7 +13,6 @@ import json
 from tempcomm import XLDTempHandler
 from database_sqlite import ServerDB
 from passkey import key, users, blueftc_ip, xld_ip
-# from event_logger import flask_file_handler, file_handler, console_handler
 from temperature_sweep import TemperatureSweepManager, TemperatureSweep
 
 db = ServerDB()
@@ -30,6 +30,11 @@ t_sweep_manager = TemperatureSweepManager()
 abort = Event()
 sweep_running = Event()
 
+log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+log_file = "xld_events.log"
+noop = logging.NullHandler()
+logging.getLogger().addHandler(noop)
+wrkzg_logger = logging.getLogger('waitress')
 
 class User(UserMixin):
     def __init__(self, id):
@@ -37,15 +42,26 @@ class User(UserMixin):
 
 
 def exec_flask():
-    # wrkzg_logger = logging.getLogger('werkzeug')
-    # wrkzg_logger.addHandler(flask_file_handler)
-    # # wrkzg_logger.addHandler(file_handler)
-    # wrkzg_logger.addHandler(console_handler)
-    # # app.logger.removeHandler(flask.logging.default_handler)
-    # wrkzg_logger.setLevel(logging.INFO)
-    # serve(app, host=xld_ip)
+    file_handler = TimedRotatingFileHandler(log_file, when='W0')
+    file_handler.setFormatter(log_formatter)
+    file_handler.setLevel(logging.INFO)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(log_formatter)
+    console_handler.setLevel(logging.INFO)
+
+    flask_file_handler = TimedRotatingFileHandler("flask_events.log", when='W0')
+    flask_file_handler.setFormatter(log_formatter)
+    flask_file_handler.setLevel(logging.INFO)
+
+    wrkzg_logger.addHandler(flask_file_handler)
+    wrkzg_logger.addHandler(file_handler)
+    wrkzg_logger.addHandler(console_handler)
+
     app.config['TEMPLATES_AUTO_RELOAD'] = True
-    app.run()
+
+    wrkzg_logger.setLevel(logging.INFO)
+    serve(app, host=xld_ip)
 
 
 @login_manager.user_loader
@@ -96,7 +112,6 @@ def broadcast_temp_sweep():
         return json.dumps({'confirmed': True, 'started': False})
 
     elif payload['start']:
-        print(payload)
         if not t_sweep_manager.started and not sweep_running.is_set():
             t_sweep = TemperatureSweep(thermalization_time=float(t_sweep_manager.therm_time) * 60,
                                        power_array=t_sweep_manager.sweep_array,
@@ -115,13 +130,13 @@ def broadcast_temp_sweep():
 @flask_login.login_required
 def abort_temp_sweep():
     if t_sweep_manager.started and sweep_running.is_set():
-        print('Abort sweep initiated.')
+        wrkzg_logger.info('FLASK SERVER: Abort sweep initiated.')
         abort.set()
         t_sweep_manager.clear()
         return json.dumps({'aborted': False, 'initiated': True})
 
     elif not sweep_running.is_set():
-        print("Abort confirmed.")
+        wrkzg_logger.info("FLASK SERVER: Abort confirmed.")
         abort.clear()
         return json.dumps({'aborted': True, 'initiated': True})
 
@@ -132,8 +147,8 @@ def abort_temp_sweep():
 @app.route('/temperature-sweep/info', methods=['GET'])
 # @flask_login.login_required
 def info_temp_sweep():
-    print('confirmed:', t_sweep_manager.confirmed, '-- started: ', t_sweep_manager.started)
-    print('abort event: ', abort.is_set(), '-- running event: ', sweep_running.is_set())
+    # print('confirmed:', t_sweep_manager.confirmed, '-- started: ', t_sweep_manager.started)
+    # print('abort event: ', abort.is_set(), '-- running event: ', sweep_running.is_set())
     if not sweep_running.is_set() and t_sweep_manager.started:
         t_sweep_manager.clear()
         return json.dumps({'abort_in_progress': False, 'confirmed': False, 'sweep_started': False})

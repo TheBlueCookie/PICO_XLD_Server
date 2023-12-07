@@ -7,6 +7,9 @@ import numpy as np
 from time import sleep
 from datetime import datetime
 from multiprocessing import Event
+import logging
+
+xld_logger = logging.getLogger('waitress')
 
 
 class TemperatureSweep:
@@ -45,44 +48,45 @@ class TemperatureSweep:
 
     def exec(self):
         self.is_running.set()
-        print(f'{datetime.now()}: Making sure that all clients are ready.')
+        xld_logger.info(f'TEMPERATURE CONTROL: Making sure that all clients are ready.')
         self.wait_for_all_clients()
-        print(f'{datetime.now()}: Started sweep.')
+        xld_logger.info(f'TEMPERATURE CONTROL: Started sweep.')
 
         for i, power in enumerate(self.power_array):
             self._try_abort()
             if not self.test_mode:
                 self.db.write_heater(index=self.db.mxc_ind, val=float(power))
-            print(f'{datetime.now()}: Set heater power to {power} uW. '
+            xld_logger.info(f'TEMPERATURE CONTROL: Set heater power to {power} uW. '
                   f'Waiting {self.thermalization_time} s for thermalization.')
             if not self.test_mode:
                 sleep(self.thermalization_time)
             self._try_abort()
-            print(
-                f'{datetime.now()}: Thermalization done. Current temperature at mixing chamber: '
+            xld_logger.info(
+                f'TEMPERATURE CONTROL: Thermalization done. Current temperature at mixing chamber: '
                 f'{self.db.read_temp(channel=self.db.mxc_ch)} K')
             self.start_all_client_meas()
-            print(f'{datetime.now()}: Send GO signal to all measurement clients.')
+            xld_logger.info(f'TEMPERATURE CONTROL: Send GO signal to all measurement clients.')
             if not self.test_mode:
                 sleep(30)
             self._try_abort()
-            print(
-                f'{datetime.now()}: Waiting for all measurements to finish at current '
+            xld_logger.info(
+                f'TEMPERATURE CONTROL: Waiting for all measurements to finish at current '
                 f'temperature point ({i + 1}/{len(self.power_array)}).')
             self.wait_for_all_clients()
-            print(f'{datetime.now()}: All measurements finished at current temperature point.')
+            xld_logger.info(f'TEMPERATURE CONTROL: All measurements finished at current temperature point.')
             self._try_abort()
 
         self.is_running.clear()
         if not self.test_mode:
-            self.db.write_heater(index=self.db.mxc_ind, val=0)
-        print(f'{datetime.now()}: Returning to base temperature.')
+            pass
+            # self.db.write_heater(index=self.db.mxc_ind, val=0)
+        xld_logger.info(f'TEMPERATURE CONTROL: Not returning to base temperature.')
 
     def _try_abort(self):
         if self.abort_flag.is_set():
             self.abort_flag.clear()
             self.is_running.clear()
-            print(f'{datetime.now()}: SWEEP ABORTED!')
+            xld_logger.info(f'TEMPERATURE CONTROL: SWEEP ABORTED!')
             sys.exit()
 
         else:
@@ -176,7 +180,7 @@ class TemperatureSweepManager:
         self.confirmed = True
         self.client_dict = {'abort_in_progress': False, 'confirmed': True, 'sweep_points': len(self.sweep_array),
                             'client_timeout': self.cl_timeout}
-        print("Set to confirmed.")
+        xld_logger.info("TEMPERATURE CONTROL: Parameters set to broadcasted.")
 
     def start_sweep(self):
         assert not self.started and self.confirmed
@@ -184,7 +188,7 @@ class TemperatureSweepManager:
         self.client_dict = {'abort_in_progress': False, 'sweep_started': True, 'confirmed': True,
                             'sweep_points': len(self.sweep_array),
                             'client_timeout': self.cl_timeout}
-        print("Set to started.")
+        xld_logger.info("TEMPERATURE CONTROL: Sweep set to started.")
 
     def clear(self):
         self.mode = ''
