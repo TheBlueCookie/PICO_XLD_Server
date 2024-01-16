@@ -11,7 +11,7 @@ print(n_sweep)
 for i in range(n_sweep):
     if client.listen():
         print("Starting measurement")
-    sleep(20)
+    sleep(30)
     print(f"done with step {i+1}")
     client.stopped()
 

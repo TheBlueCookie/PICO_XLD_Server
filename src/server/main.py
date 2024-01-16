@@ -71,10 +71,14 @@ def load_user(user_id):
 
 @app.route("/meas/register", methods=['POST'])
 def meas_reg():
-    cont = json_request_handler()
-    token = db.register_measurement(user=cont['user'], group=cont['group'])
+    if not t_sweep_manager.started:
+        cont = json_request_handler()
+        token = db.register_measurement(user=cont['user'], group=cont['group'])
 
-    return json.dumps({'id': token})
+        return json.dumps({'id': token})
+
+    else:
+        return json.dumps({'error': 'ERROR! Sweep already started.'})
 
 
 @app.route("/meas/deregister", methods=['POST'])
@@ -154,8 +158,11 @@ def info_temp_sweep():
         t_sweep_manager.clear()
         return json.dumps({'abort_in_progress': False, 'confirmed': False, 'sweep_started': False})
 
-    elif t_sweep_manager.confirmed or t_sweep_manager.started:
+    elif t_sweep_manager.confirmed:
         return json.dumps(t_sweep_manager.client_dict)
+
+    elif t_sweep_manager.started:
+        return json.dumps({'abort_in_progress': False, 'confirmed': True, 'sweep_started': True})
 
     elif abort.is_set() and sweep_running.is_set():
         return json.dumps({'abort_in_progress': True})

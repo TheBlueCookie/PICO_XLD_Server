@@ -1,4 +1,6 @@
 import json
+import sys
+
 import requests
 from time import sleep
 
@@ -37,6 +39,10 @@ class XLDMeasClient:
     def _register(self):
         payload = {'user': self.user, 'group': self.group}
         response = self._generic_request(path=self._make_endpoint('meas', 'register'), payload=payload)
+        if 'error' in response.keys():
+            print(response['error'])
+            sys.exit("Failed to register at server.")
+
         self.id = response['id']
 
     def _deregister(self):
