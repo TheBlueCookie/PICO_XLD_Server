@@ -2,10 +2,9 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 from multiprocessing import Process, Event
 
-# import flask
 from waitress import serve
 
-from flask import Flask, request, render_template, redirect, url_for, flash
+from flask import Flask, request, render_template, redirect, flash
 import flask_login
 from flask_login import LoginManager, UserMixin
 import json
@@ -35,6 +34,7 @@ log_file = "xld_events.log"
 noop = logging.NullHandler()
 logging.getLogger().addHandler(noop)
 wrkzg_logger = logging.getLogger('waitress')
+
 
 class User(UserMixin):
     def __init__(self, id):
@@ -117,7 +117,8 @@ def broadcast_temp_sweep():
                                        power_array=t_sweep_manager.sweep_array,
                                        client_timeout=float(t_sweep_manager.cl_timeout) * 60,
                                        abort_flag=abort, is_running=sweep_running, test_mode=True,
-                                       return_to_base=t_sweep_manager.return_to_base)
+                                       return_to_base=t_sweep_manager.return_to_base,
+                                       skip_first=t_sweep_manager.skip_first)
             t_sweep_manager.start_sweep()
             sweep_running.set()
             t_sweep_process = Process(target=t_sweep.exec(), name='Temperature Sweep')

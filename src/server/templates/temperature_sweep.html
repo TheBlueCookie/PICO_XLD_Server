@@ -137,7 +137,9 @@
             <input type="text" id="client-timeout" name="client-timeout" value="60" class="float-only">
         </div>
         <input type="checkbox" id="return-to-base" name="return-to-base">
-        <label for="return-to-base">Return to base temperature once sweep is done.</label>
+        <label for="return-to-base">Return to base temperature once sweep is done.</label><br>
+        <input type="checkbox" id="skip-first-thermalization" name="skip-first-thermalization" checked>
+        <label for="skip-first-thermalization">Skip thermalization time in first iteration.</label>
     </div>
     <hr>
 </div>
@@ -160,7 +162,8 @@
             <span id="summary-cl-timeout" class="sum-item"></span>
         </div>
     </div>
-    <span id="summary-ret-base" class="sum-item"><b></b></span>
+    <span id="summary-ret-base" class="sum-item"><b></b></span><br>
+    <span id="summary-skip-first" class="sum-item"><b></b></span>
 </div>
 
 
@@ -298,6 +301,7 @@
                     interpolation: interpolation,
                     client_timeout: document.getElementById("client-timeout").value,
                     ret_base: document.getElementById("return-to-base").checked,
+                    skip_first: document.getElementById("skip-first-thermalization").checked,
                     min_pow: document.getElementById("min-power").value,
                     max_pow: document.getElementById("max-power").value,
                     n_pow: document.getElementById("power-steps").value,
@@ -310,6 +314,7 @@
                     interpolation: interpolation,
                     client_timeout: document.getElementById("client-timeout").value,
                     ret_base: document.getElementById("return-to-base").checked,
+                    skip_first: document.getElementById("skip-first-thermalization").checked,
                     values: document.getElementById("manual-input").value,
                     therm_time: document.getElementById("thermalization-time").value,
                 })
@@ -344,6 +349,8 @@
                 document.getElementById("summary-cl-timeout").textContent = resp.cl_timeout;
                 document.getElementById("summary-ret-base").textContent = "Cryostat will " + resp.ret_base + " to base temperature.";
                 document.getElementById("summary-ret-base").style.fontWeight = 'bold';
+                document.getElementById("summary-skip-first").textContent = "Controller will " + resp.skip_first + " first thermalization.";
+                document.getElementById("summary-skip-first").style.fontWeight = 'bold';
             }
 
             document.getElementById("direct-power-summary").style.display = "block";
@@ -379,7 +386,7 @@
                 document.getElementById("abort-sweep").style.display = "none";
                 document.getElementById("direct-power-summary").style.display = "none";
                 document.getElementById("alert-info").style.display = "block";
-                document.getElementById("alert-info").textContent = "Sweep Abortion initiated...  Reload page periodically to check status."
+                document.getElementById("alert-info").textContent = "Sweep abortion initiated...  Reload page periodically to check status."
                 document.getElementById("start-sweep").style.display = "none";
             }
         };
