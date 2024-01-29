@@ -120,7 +120,7 @@ def broadcast_temp_sweep():
             t_sweep = TemperatureSweep(thermalization_time=float(t_sweep_manager.therm_time) * 60,
                                        power_array=t_sweep_manager.sweep_array,
                                        client_timeout=float(t_sweep_manager.cl_timeout) * 60,
-                                       abort_flag=abort, is_running=sweep_running, test_mode=True,
+                                       abort_flag=abort, is_running=sweep_running, test_mode=False,
                                        return_to_base=t_sweep_manager.return_to_base,
                                        skip_first=t_sweep_manager.skip_first)
             t_sweep_manager.start_sweep()
@@ -303,5 +303,4 @@ tc_process = Process(target=exec_tcontrol, name='Temperature Controller')
 
 if __name__ == "__main__":
     flask_server.start()
-    # exec_flask()
-    # tc_process.start()
+    tc_process.start()
