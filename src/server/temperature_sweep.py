@@ -53,20 +53,23 @@ class TemperatureSweep:
         xld_logger.info(f'TEMPERATURE CONTROL: Making sure that all clients are ready.')
         self.wait_for_all_clients()
         xld_logger.info(f'TEMPERATURE CONTROL: Started sweep.')
-        skip = False
 
         for i, power in enumerate(self.power_array):
             self._try_abort()
             if not self.test_mode:
                 self.db.write_heater(index=self.db.mxc_ind, val=float(power))
             xld_logger.info(f'TEMPERATURE CONTROL: Set heater power to {power} uW.')
-            if i == 0 and self.skip_first:
-                skip = True
-            if not skip:
+            if i == 0:
+                if not self.skip_first:
+                    xld_logger.info(f'TEMPERATURE CONTROL: Waiting {self.thermalization_time} s for thermalization.')
+                    if not self.test_mode:
+                        sleep(self.thermalization_time)
+                else:
+                    xld_logger.info(f'TEMPERATURE CONTROL: Skipping first thermalization.')
+            else:
                 xld_logger.info(f'TEMPERATURE CONTROL: Waiting {self.thermalization_time} s for thermalization.')
                 if not self.test_mode:
                     sleep(self.thermalization_time)
-                skip = False
             self._try_abort()
             xld_logger.info(
                 f'TEMPERATURE CONTROL: Thermalization done. Current temperature at mixing chamber: '
