@@ -1,0 +1,25 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xld-client"
+version = "1.0.0"
+description = "Client package for XLD server communication"
+readme = "README.md"
+authors = [{ name = "Elias Ankerhold", email = "elias.ankerhold@aalto.fi" }]
+license = { file = "LICENSE.txt" }
+classifiers = [
+    "License :: OSI Approved :: GPL-3.0-only",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+]
+dependencies = []
+
+requires-python = ">=3.9"
+
+[tool.setuptools]
+packages = ['XLDClient']

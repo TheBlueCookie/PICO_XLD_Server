@@ -4,16 +4,17 @@ from datetime import datetime
 from multiprocessing import Lock
 import sqlite3 as sq
 import logging
+import os
 
 from measurements import WAIT, GO, RUNNING, CRASHED
-from passkey import db_filename
+from passkey import data_dir, db_filename
 
 xld_logger = logging.getLogger('waitress')
 
 
 @dataclass
 class ServerDB:
-    db_name: str = db_filename
+    db_name: str = os.path.join(data_dir, db_filename)
     meas_lock: Lock = Lock()
     temp_lock: Lock = Lock()
     heater_lock: Lock = Lock()

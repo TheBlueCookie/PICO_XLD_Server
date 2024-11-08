@@ -1,4 +1,5 @@
 import logging
+import sys
 from logging.handlers import TimedRotatingFileHandler
 from multiprocessing import Process, Event
 
@@ -9,9 +10,19 @@ import flask_login
 from flask_login import LoginManager, UserMixin
 import json
 
+import os
+from passkey import key, users, blueftc_ip, xld_ip, data_dir
+
+if not os.path.isdir(data_dir):
+    try:
+        os.mkdir(data_dir)
+    except Exception as ex:
+        print(f'Log directory creation failed! Cannot create {data_dir}')
+        print(ex)
+        sys.exit()
+
 from tempcomm import XLDTempHandler
 from database_sqlite import ServerDB
-from passkey import key, users, blueftc_ip, xld_ip
 from temperature_sweep import TemperatureSweepManager, TemperatureSweep
 
 db = ServerDB()
@@ -30,7 +41,7 @@ abort = Event()
 sweep_running = Event()
 
 log_formatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-log_file = "xld_events.log"
+log_file = os.path.join(data_dir, "xld_events.log")
 noop = logging.NullHandler()
 logging.getLogger().addHandler(noop)
 wrkzg_logger = logging.getLogger('waitress')
@@ -50,7 +61,7 @@ def exec_flask():
     console_handler.setFormatter(log_formatter)
     console_handler.setLevel(logging.INFO)
 
-    flask_file_handler = TimedRotatingFileHandler("flask_events.log", when='W0')
+    flask_file_handler = TimedRotatingFileHandler(os.path.join(data_dir, "flask_events.log"), when='W0')
     flask_file_handler.setFormatter(log_formatter)
     flask_file_handler.setLevel(logging.INFO)
 
